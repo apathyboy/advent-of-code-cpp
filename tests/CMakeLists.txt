@@ -6,7 +6,10 @@ find_package(
 include(CTest)
 include(Catch)
 
-add_executable(aoc2020-tests main.cpp)
+add_executable(
+    aoc2020-tests
+    day01.cpp
+    main.cpp)
 
 target_link_libraries(
     aoc2020-tests
