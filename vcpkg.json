@@ -2,6 +2,8 @@
     "name": "aoc2020cpp",
     "version-string": "0.0.1",
     "dependencies": [
-        "catch2"
+        "catch2",
+        "range-v3",
+        "fmt"
     ]
 }

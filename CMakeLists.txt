@@ -2,6 +2,16 @@ cmake_minimum_required(VERSION 3.16)
 
 project(aoc2020cpp)
 
+find_package(
+    fmt
+    CONFIG
+    REQUIRED)
+
+find_package(
+    range-v3
+    CONFIG
+    REQUIRED)
+
 add_library(
     aoc2020
     include/aoc2020/aoc2020.hpp
