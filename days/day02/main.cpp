@@ -17,14 +17,15 @@ int main(int argc, const char** argv)
         fmt::print("USAGE: day02 <input_file_path>\n");
     }
 
+    auto parse      = [](const auto& s) { return parse_password_rule_string(s); };
+    auto selection1 = [](const auto& entry) { return is_valid_day2_part1_pw(entry); };
+    auto selection2 = [](const auto& entry) { return is_valid_day2_part2_pw(entry); };
+
     {
         std::ifstream ifs{argv[1]};
 
-        auto parse     = [](const auto& s) { return parse_password_rule_string(s); };
-        auto selection = [](const auto& entry) { return is_valid_day2_part1_pw(entry); };
-
         auto valid = ranges::getlines(ifs) | views::transform(parse)
-                     | views::filter(selection);
+                     | views::filter(selection1);
 
         fmt::print("Part 1 Solution: {}\n", distance(valid));
     }
@@ -32,11 +33,8 @@ int main(int argc, const char** argv)
     {
         std::ifstream ifs{argv[1]};
 
-        auto parse     = [](const auto& s) { return parse_password_rule_string(s); };
-        auto selection = [](const auto& entry) { return is_valid_day2_part2_pw(entry); };
-
         auto valid = ranges::getlines(ifs) | views::transform(parse)
-                     | views::filter(selection);
+                     | views::filter(selection2);
 
         fmt::print("Part 2 Solution: {}\n", distance(valid));
     }
