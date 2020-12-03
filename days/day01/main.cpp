@@ -1,8 +1,9 @@
 
 #include <aoc2020/aoc2020.hpp>
 
+#include <fmt/core.h>
+
 #include <fstream>
-#include <iostream>
 
 int day1_part1(const std::vector<int>& nums)
 {
@@ -25,16 +26,15 @@ int day1_part2(const std::vector<int>& nums)
 int main(int argc, const char** argv)
 {
     if (argc != 2) {
-        std::cout << "USAGE: day01 <input_file_path>\n" << std::endl;
+        fmt::print("USAGE: day01 <input_file_path>\n");
     }
 
     std::ifstream ifs{argv[1]};
 
-    auto nums = aoc2020::read_int_per_line(ifs);
+    auto input = aoc2020::read_int_per_line(ifs);
 
-    std::cout << "Part 1 Solution: " << day1_part1(nums) << std::endl;
-
-    std::cout << "Part 2 Solution: " << day1_part2(nums) << std::endl;
+    fmt::print("Part 1 Solution: {}", day1_part1(input));
+    fmt::print("Part 2 Solution: ", day1_part2(input));
 
     return 0;
 }
