@@ -23,4 +23,8 @@ find_sum_to_triplets(const std::vector<int>& vals, int target);
 
 std::pair<corporate_policy, std::string> parse_password_rule_string(const std::string& str);
 
+bool is_valid_day2_part1_pw(const std::pair<corporate_policy, std::string>& pw);
+
+bool is_valid_day2_part2_pw(const std::pair<corporate_policy, std::string>& pw);
+
 } // namespace aoc2020

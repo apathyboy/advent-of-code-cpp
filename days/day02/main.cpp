@@ -21,10 +21,7 @@ int main(int argc, const char** argv)
         std::ifstream ifs{argv[1]};
 
         auto parse     = [](const auto& s) { return parse_password_rule_string(s); };
-        auto selection = [](const auto& entry) {
-            auto c = count(entry.second, entry.first.target);
-            return (c >= entry.first.min_count && c <= entry.first.max_count);
-        };
+        auto selection = [](const auto& entry) { return is_valid_day2_part1_pw(entry); };
 
         auto valid = ranges::getlines(ifs) | views::transform(parse)
                      | views::filter(selection);
@@ -36,15 +33,7 @@ int main(int argc, const char** argv)
         std::ifstream ifs{argv[1]};
 
         auto parse     = [](const auto& s) { return parse_password_rule_string(s); };
-        auto selection = [](const auto& entry) {
-            const auto& str    = entry.second;
-            int         pos1   = entry.first.min_count - 1;
-            int         pos2   = entry.first.max_count - 1;
-            char        target = entry.first.target;
-
-            return (str[pos1] == target && str[pos2] != target)
-                   || (str[pos1] != target && str[pos2] == target);
-        };
+        auto selection = [](const auto& entry) { return is_valid_day2_part2_pw(entry); };
 
         auto valid = ranges::getlines(ifs) | views::transform(parse)
                      | views::filter(selection);

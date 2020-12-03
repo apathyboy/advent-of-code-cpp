@@ -75,4 +75,21 @@ std::pair<corporate_policy, std::string> parse_password_rule_string(const std::s
     return std::make_pair(p, s);
 }
 
+bool is_valid_day2_part1_pw(const std::pair<corporate_policy, std::string>& pw)
+{
+    auto c = std::ranges::count(pw.second, pw.first.target);
+    return (c >= pw.first.min_count && c <= pw.first.max_count);
+}
+
+bool is_valid_day2_part2_pw(const std::pair<corporate_policy, std::string>& pw)
+{
+    const auto& str    = pw.second;
+    int         pos1   = pw.first.min_count - 1;
+    int         pos2   = pw.first.max_count - 1;
+    char        target = pw.first.target;
+
+    return (str[pos1] == target && str[pos2] != target)
+           || (str[pos1] != target && str[pos2] == target);
+}
+
 } // namespace aoc2020
