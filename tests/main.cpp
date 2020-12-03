@@ -12,9 +12,9 @@
 TEST_CASE("Can parse string input of 1 int per line", "[main]")
 {
     std::stringstream stream;
-    stream << "12345"
-           << "-2345"
-           << "147";
+    stream << "12345\n"
+           << "-2345\n"
+           << "147\n";
 
     auto ints = aoc2020::read_int_per_line(stream);
 
