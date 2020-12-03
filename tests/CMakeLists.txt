@@ -9,6 +9,7 @@ include(Catch)
 add_executable(
     aoc2020-tests
     day01.cpp
+    day02.cpp
     main.cpp)
 
 target_link_libraries(

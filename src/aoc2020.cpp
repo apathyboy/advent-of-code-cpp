@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include <ranges>
+#include <sstream>
 
 namespace aoc2020 {
 
@@ -59,6 +60,19 @@ find_sum_to_triplets(const std::vector<int>& vals, int target)
     }
 
     return results;
+}
+
+std::pair<corporate_policy, std::string> parse_password_rule_string(const std::string& str)
+{
+    char             junk;
+    corporate_policy p;
+    std::string      s;
+
+    std::stringstream ss{str};
+
+    ss >> p.min_count >> junk >> p.max_count >> p.target >> junk >> s;
+
+    return std::make_pair(p, s);
 }
 
 } // namespace aoc2020
