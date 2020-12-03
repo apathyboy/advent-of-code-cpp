@@ -25,7 +25,7 @@ int day1_part2(const std::vector<int>& nums)
 int main(int argc, const char** argv)
 {
     if (argc != 2) {
-        std::cout << "USAGE: day01-part1 <input_file_path>\n" << std::endl;
+        std::cout << "USAGE: day01 <input_file_path>\n" << std::endl;
     }
 
     std::ifstream ifs{argv[1]};
