@@ -3,7 +3,7 @@
 
 #include <catch2/catch.hpp>
 
-TEST_CASE("Can find two numbers that equal sum in list")
+TEST_CASE("Can find two numbers that equal sum in list", "[day01]")
 {
     std::vector<int> nums = {1721, 979, 366, 299, 675, 1456};
 
@@ -13,7 +13,7 @@ TEST_CASE("Can find two numbers that equal sum in list")
     REQUIRE(results[0].second == 299);
 }
 
-TEST_CASE("Can find three numbers that equal sum in list")
+TEST_CASE("Can find three numbers that equal sum in list", "[day01]")
 {
     std::vector<int> nums = {1721, 979, 366, 299, 675, 1456};
 
