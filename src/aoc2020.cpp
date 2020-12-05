@@ -92,4 +92,43 @@ bool is_valid_day2_part2_pw(const std::pair<corporate_policy, std::string>& pw)
            || (str[pos1] != target && str[pos2] == target);
 }
 
+int calculate_row_id(std::string_view boarding_pass)
+{
+    int min = 0;
+    int max = 127;
+
+    for (int i = 0; i < 7; ++i) {
+        if (boarding_pass[i] == 'F') {
+            max -= static_cast<int>(std::roundf((max - min) / 2.f));
+        }
+        else {
+            min += static_cast<int>(std::roundf((max - min) / 2.f));
+        }
+    }
+
+    return min;
+}
+
+int calculate_column(std::string_view boarding_pass)
+{
+    int min = 0;
+    int max = 7;
+
+    for (int i = 0; i < 3; ++i) {
+        if (boarding_pass[7 + i] == 'L') {
+            max -= static_cast<int>(std::roundf((max - min) / 2.f));
+        }
+        else {
+            min += static_cast<int>(std::roundf((max - min) / 2.f));
+        }
+    }
+
+    return min;
+}
+
+int calculate_seat_id(std::string_view boarding_pass)
+{
+    return calculate_row_id(boarding_pass) * 8 + calculate_column(boarding_pass);
+}
+
 } // namespace aoc2020

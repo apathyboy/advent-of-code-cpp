@@ -27,4 +27,10 @@ bool is_valid_day2_part1_pw(const std::pair<corporate_policy, std::string>& pw);
 
 bool is_valid_day2_part2_pw(const std::pair<corporate_policy, std::string>& pw);
 
+int calculate_row_id(std::string_view boarding_pass);
+
+int calculate_column(std::string_view boarding_pass);
+
+int calculate_seat_id(std::string_view boarding_pass);
+
 } // namespace aoc2020
