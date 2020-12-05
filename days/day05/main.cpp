@@ -19,13 +19,11 @@ int main(int argc, const char** argv)
                     })
                     | ranges::to<std::vector<int>>;
 
-    auto size = ranges::distance(seat_ids);
-    auto min  = ranges::min(seat_ids);
-    auto max  = ranges::max(seat_ids);
-    auto sum  = ranges::accumulate(seat_ids, 0);
+    auto [min, max] = ranges::minmax(seat_ids);
+    auto sum        = ranges::accumulate(seat_ids, 0);
 
     fmt::print("Part 1 Solution: {}\n", max);
-    fmt::print("Part 2 Solution: {}\n", ((size + 1) * (min + max) / 2) - sum);
+    fmt::print("Part 2 Solution: {}\n", ((seat_ids.size() + 1) * (min + max) / 2) - sum);
 
     return 0;
 }
