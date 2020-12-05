@@ -4,4 +4,3 @@ target_link_libraries(
     PRIVATE aoc2020
             fmt::fmt
             range-v3::meta)
-target_include_directories(day04 PRIVATE ${BOOST_ALGORITHM_INCLUDE_DIRS})
