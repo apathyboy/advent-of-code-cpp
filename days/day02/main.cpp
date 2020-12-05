@@ -2,7 +2,7 @@
 #include <aoc2020/aoc2020.hpp>
 
 #include <fmt/core.h>
-#include <range/v3/all.hpp> // get everything
+#include <range/v3/all.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -24,8 +24,7 @@ int main(int argc, const char** argv)
     {
         std::ifstream ifs{argv[1]};
 
-        auto valid = ranges::getlines(ifs) | views::transform(parse)
-                     | views::filter(selection1);
+        auto valid = getlines(ifs) | views::transform(parse) | views::filter(selection1);
 
         fmt::print("Part 1 Solution: {}\n", distance(valid));
     }
@@ -33,8 +32,7 @@ int main(int argc, const char** argv)
     {
         std::ifstream ifs{argv[1]};
 
-        auto valid = ranges::getlines(ifs) | views::transform(parse)
-                     | views::filter(selection2);
+        auto valid = getlines(ifs) | views::transform(parse) | views::filter(selection2);
 
         fmt::print("Part 2 Solution: {}\n", distance(valid));
     }

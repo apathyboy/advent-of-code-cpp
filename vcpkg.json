@@ -2,8 +2,9 @@
     "name": "aoc2020cpp",
     "version-string": "0.0.1",
     "dependencies": [
+        "boost-algorithm",
         "catch2",
-        "range-v3",
-        "fmt"
+        "fmt",
+        "range-v3"
     ]
 }
