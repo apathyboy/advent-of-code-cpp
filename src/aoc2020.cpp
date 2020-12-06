@@ -1,10 +1,16 @@
 
 #include "aoc2020.hpp"
 
+#include <range/v3/all.hpp>
+
 #include <algorithm>
+#include <array>
+#include <bitset>
 #include <iostream>
 #include <ranges>
 #include <sstream>
+
+using namespace ranges;
 
 namespace aoc2020 {
 
@@ -92,43 +98,16 @@ bool is_valid_day2_part2_pw(const std::pair<corporate_policy, std::string>& pw)
            || (str[pos1] != target && str[pos2] == target);
 }
 
-int calculate_row_id(std::string_view boarding_pass)
+int calculate_seat_id(std::string_view pass)
 {
-    int min = 0;
-    int max = 127;
+    auto to_bits = [](char c) {
+        if (c == 'F' || c == 'L')
+            return '0';
+        else
+            return '1';
+    };
 
-    for (int i = 0; i < 7; ++i) {
-        if (boarding_pass[i] == 'F') {
-            max -= static_cast<int>(std::roundf((max - min) / 2.f));
-        }
-        else {
-            min += static_cast<int>(std::roundf((max - min) / 2.f));
-        }
-    }
-
-    return min;
-}
-
-int calculate_column(std::string_view boarding_pass)
-{
-    int min = 0;
-    int max = 7;
-
-    for (int i = 0; i < 3; ++i) {
-        if (boarding_pass[7 + i] == 'L') {
-            max -= static_cast<int>(std::roundf((max - min) / 2.f));
-        }
-        else {
-            min += static_cast<int>(std::roundf((max - min) / 2.f));
-        }
-    }
-
-    return min;
-}
-
-int calculate_seat_id(std::string_view boarding_pass)
-{
-    return calculate_row_id(boarding_pass) * 8 + calculate_column(boarding_pass);
+    return std::bitset<10>(pass | views::transform(to_bits) | to<std::string>).to_ulong();
 }
 
 } // namespace aoc2020
