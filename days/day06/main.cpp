@@ -6,6 +6,8 @@
 #include <set>
 #include <string>
 
+using namespace ranges;
+
 int main(int argc, const char** argv)
 {
     if (argc != 2) {
@@ -13,51 +15,49 @@ int main(int argc, const char** argv)
     }
 
     {
-        std::ifstream ifs{argv[1]};
+        std::ifstream  ifs{argv[1]};
+        std::string    str;
+        std::set<char> q1;
+        size_t         part1_sum = 0;
 
-        int sum_of_counts = 0;
-
-        std::set<char> questions;
-
-        std::string str;
         while (std::getline(ifs, str)) {
             if (str.length() == 0) {
-                sum_of_counts += static_cast<int>(questions.size());
-                questions.clear();
+                part1_sum += q1.size();
+                q1.clear();
             }
 
-            questions.insert(str.begin(), str.end());
+            insert(q1, str);
         }
 
-        fmt::print("Part 1 Solution: {}\n", sum_of_counts);
+        fmt::print("Part 1 Solution: {}\n", part1_sum);
     }
 
     {
         std::ifstream ifs{argv[1]};
 
-        int sum_of_counts = 0;
+        int part2_sum = 0;
 
         std::string str;
         std::string questions;
 
         std::getline(ifs, questions);
-        ranges::sort(questions);
+        sort(questions);
 
         while (std::getline(ifs, str)) {
+            sort(str);
+
             if (str.length() == 0) {
-                sum_of_counts += static_cast<int>(questions.size());
+                part2_sum += static_cast<int>(questions.size());
+
                 std::getline(ifs, questions);
-                ranges::sort(questions);
+                sort(questions);
             }
             else {
-                ranges::sort(str);
-
-                questions = ranges::views::set_intersection(questions, str)
-                            | ranges::to<std::string>;
+                questions = views::set_intersection(questions, str) | to<std::string>;
             }
         }
 
-        fmt::print("Part 2 Solution: {}\n", sum_of_counts);
+        fmt::print("Part 2 Solution: {}\n", part2_sum);
     }
 
     return 0;
