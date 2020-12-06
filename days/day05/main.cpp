@@ -2,9 +2,16 @@
 #include <aoc2020/aoc2020.hpp>
 
 #include <fmt/core.h>
+
+#pragma warning(push)
+#pragma warning(disable : 28278)
 #include <range/v3/all.hpp>
+#pragma warning(pop)
 
 #include <fstream>
+
+using namespace aoc2020;
+using namespace ranges;
 
 int main(int argc, const char** argv)
 {
@@ -14,16 +21,13 @@ int main(int argc, const char** argv)
 
     std::ifstream ifs{argv[1]};
 
-    auto seat_ids = ranges::getlines(ifs) | ranges::views::transform([](const auto& s) {
-                        return aoc2020::calculate_seat_id(s);
-                    })
-                    | ranges::to<std::vector<int>>;
+    auto seat_ids = getlines(ifs) | views::transform(calculate_seat_id) | to<std::vector<int>>;
 
-    auto [min, max] = ranges::minmax(seat_ids);
-    auto sum        = ranges::accumulate(seat_ids, 0);
+    auto [min_id, max_id] = minmax(seat_ids);
+    auto sum              = accumulate(seat_ids, 0);
 
-    fmt::print("Part 1 Solution: {}\n", max);
-    fmt::print("Part 2 Solution: {}\n", ((seat_ids.size() + 1) * (min + max) / 2) - sum);
+    fmt::print("Part 1 Solution: {}\n", max_id);
+    fmt::print("Part 2 Solution: {}\n", ((seat_ids.size() + 1) * (min_id + max_id) / 2) - sum);
 
     return 0;
 }
