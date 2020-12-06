@@ -8,6 +8,7 @@
 #include <range/v3/all.hpp>
 #pragma warning(pop)
 
+#include <bitset>
 #include <fstream>
 
 using namespace aoc2020;
