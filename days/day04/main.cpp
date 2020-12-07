@@ -70,6 +70,8 @@ auto is_valid_part2_field = [](const field_t& f) {
 
 int main()
 {
+    fmt::print("Advent of Code 2020 - Day 04\n");
+
     std::ifstream ifs{"days/day04/input.txt"};
 
     std::string str;

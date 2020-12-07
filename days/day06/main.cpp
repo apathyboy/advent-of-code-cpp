@@ -10,6 +10,8 @@ using namespace ranges;
 
 int main()
 {
+    fmt::print("Advent of Code 2020 - Day 06\n");
+
     {
         std::ifstream  ifs{"days/day06/input.txt"};
         std::string    str;

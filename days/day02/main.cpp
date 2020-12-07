@@ -13,6 +13,8 @@ using namespace aoc2020;
 
 int main()
 {
+    fmt::print("Advent of Code 2020 - Day 02\n");
+
     auto parse      = [](const auto& s) { return parse_password_rule_string(s); };
     auto selection1 = [](const auto& entry) { return is_valid_day2_part1_pw(entry); };
     auto selection2 = [](const auto& entry) { return is_valid_day2_part2_pw(entry); };

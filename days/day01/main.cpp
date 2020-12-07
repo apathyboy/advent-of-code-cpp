@@ -44,6 +44,8 @@ int part2(const std::vector<int>& input)
 
 int main()
 {
+    fmt::print("Advent of Code 2020 - Day 01\n");
+
     std::ifstream ifs{"days/day01/input.txt"};
 
     std::vector<int> input = ranges::getlines(ifs)

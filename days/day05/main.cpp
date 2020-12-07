@@ -16,6 +16,8 @@ using namespace ranges;
 
 int main()
 {
+    fmt::print("Advent of Code 2020 - Day 05\n");
+
     std::ifstream ifs{"days/day05/input.txt"};
 
     auto seat_ids = getlines(ifs) | views::transform(calculate_seat_id) | to<std::vector<int>>;
