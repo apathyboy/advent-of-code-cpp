@@ -14,13 +14,9 @@
 using namespace aoc2020;
 using namespace ranges;
 
-int main(int argc, const char** argv)
+int main()
 {
-    if (argc != 2) {
-        fmt::print("USAGE: day05 <input_file_path>\n");
-    }
-
-    std::ifstream ifs{argv[1]};
+    std::ifstream ifs{"days/day05/input.txt"};
 
     auto seat_ids = getlines(ifs) | views::transform(calculate_seat_id) | to<std::vector<int>>;
 

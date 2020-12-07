@@ -8,14 +8,10 @@
 
 using namespace ranges;
 
-int main(int argc, const char** argv)
+int main()
 {
-    if (argc != 2) {
-        fmt::print("USAGE: day06 <input_file_path>\n");
-    }
-
     {
-        std::ifstream  ifs{argv[1]};
+        std::ifstream  ifs{"days/day06/input.txt"};
         std::string    str;
         std::set<char> q1;
         size_t         part1_sum = 0;
@@ -33,7 +29,7 @@ int main(int argc, const char** argv)
     }
 
     {
-        std::ifstream ifs{argv[1]};
+        std::ifstream ifs{"days/day06/input.txt"};
 
         int part2_sum = 0;
 

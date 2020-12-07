@@ -42,13 +42,9 @@ int part2(const std::vector<int>& input)
     return ranges::front(result);
 }
 
-int main(int argc, const char** argv)
+int main()
 {
-    if (argc != 2) {
-        fmt::print("USAGE: day01 <input_file_path>\n");
-    }
-
-    std::ifstream ifs{argv[1]};
+    std::ifstream ifs{"days/day01/input.txt"};
 
     std::vector<int> input = ranges::getlines(ifs)
                              | rv::transform([](auto&& s) { return std::stoi(s); })

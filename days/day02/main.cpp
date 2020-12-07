@@ -11,18 +11,14 @@ using namespace ranges;
 
 using namespace aoc2020;
 
-int main(int argc, const char** argv)
+int main()
 {
-    if (argc != 2) {
-        fmt::print("USAGE: day02 <input_file_path>\n");
-    }
-
     auto parse      = [](const auto& s) { return parse_password_rule_string(s); };
     auto selection1 = [](const auto& entry) { return is_valid_day2_part1_pw(entry); };
     auto selection2 = [](const auto& entry) { return is_valid_day2_part2_pw(entry); };
 
     {
-        std::ifstream ifs{argv[1]};
+        std::ifstream ifs{"days/day02/input.txt"};
 
         auto valid = getlines(ifs) | views::transform(parse) | views::filter(selection1);
 
@@ -30,7 +26,7 @@ int main(int argc, const char** argv)
     }
 
     {
-        std::ifstream ifs{argv[1]};
+        std::ifstream ifs{"days/day02/input.txt"};
 
         auto valid = getlines(ifs) | views::transform(parse) | views::filter(selection2);
 

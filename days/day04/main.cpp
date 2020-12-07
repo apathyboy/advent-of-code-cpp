@@ -68,13 +68,9 @@ auto is_valid_part2_field = [](const field_t& f) {
     return true;
 };
 
-int main(int argc, const char** argv)
+int main()
 {
-    if (argc != 2) {
-        fmt::print("USAGE: day04 <input_file_path>\n");
-    }
-
-    std::ifstream ifs{argv[1]};
+    std::ifstream ifs{"days/day04/input.txt"};
 
     std::string str;
 

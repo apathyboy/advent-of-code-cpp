@@ -4,13 +4,9 @@
 #include <fstream>
 #include <string>
 
-int main(int argc, const char** argv)
+int main()
 {
-    if (argc != 2) {
-        fmt::print("USAGE: day03 <input_file_path>\n");
-    }
-
-    std::ifstream ifs{argv[1]};
+    std::ifstream ifs{"days/day03/input.txt"};
 
     std::string str;
     int         slope1 = 1, slope2 = 3, slope3 = 5, slope4 = 7;

@@ -2,14 +2,11 @@
 #include <fmt/core.h>
 
 #include <fstream>
+#include <string>
 
-int main(int argc, const char** argv)
+int main()
 {
-    if (argc != 2) {
-        fmt::print("USAGE: day06 <input_file_path>\n");
-    }
-
-    std::ifstream ifs{argv[1]};
+    std::ifstream ifs{"days/day07/input.txt"};
 
     return 0;
 }
