@@ -12,10 +12,6 @@ find_package(
     CONFIG
     REQUIRED)
 
-find_path(
-    BOOST_ALGORITHM_INCLUDE_DIRS
-    "boost/algorithm/algorithm.hpp")
-
 add_library(
     aoc2020
     include/aoc2020/aoc2020.hpp

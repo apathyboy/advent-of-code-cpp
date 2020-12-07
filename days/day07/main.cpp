@@ -1,5 +1,4 @@
 
-#include <boost/algorithm/string/trim.hpp>
 #include <fmt/core.h>
 #include <range/v3/all.hpp>
 
@@ -13,7 +12,7 @@
 using namespace ranges;
 
 const auto search_regex   = std::regex(R"((.*) bags contain (.*))");
-const auto contents_regex = std::regex(R"([ ]?(\d+) (.*) bag[s]?[.]?)");
+const auto contents_regex = std::regex(R"((\d+) (.*?) bag)");
 
 struct contained {
     std::string name;
@@ -30,15 +29,10 @@ bool can_contain_type(
     const node&              check,
     const std::string&       search_type)
 {
-    // fmt::print("Searching type! {} ({})\n", check.name, check.children.size());
     if (find_if(
             check.children,
-            [&search_type, &check](const auto& c) {
-                // fmt::print("Checking {}.{}\n", check.name, c.name);
-                return c.name == search_type;
-            })
+            [&search_type, &check](const auto& c) { return c.name == search_type; })
         != end(check.children)) {
-        // fmt::print("Found! {}\n", check.name);
         return true;
     }
 
@@ -50,8 +44,6 @@ bool can_contain_type(
                 return true;
         }
     }
-
-    // fmt::print("Not Found! {}\n", check.name);
 
     return false;
 }
@@ -103,22 +95,13 @@ int main()
 
                      node n;
                      n.name = m.str(1);
-                     boost::algorithm::trim(n.name);
 
                      auto tmp = m.str(2);
 
-                     auto contents = tmp | ranges::views::split(',');
-
-                     for (auto item : contents) {
-                         auto tmp2 = item | to<std::string>;
-
-                         std::smatch m2;
-                         if (std::regex_match(tmp2, m2, contents_regex)) {
-                             contained c{m2.str(2), std::stoi(m2.str(1))};
-
-                             boost::algorithm::trim(c.name);
-                             n.children.push_back(c);
-                         }
+                     std::smatch m2;
+                     while (std::regex_search(tmp, m2, contents_regex)) {
+                         n.children.push_back({m2.str(2), std::stoi(m2.str(1))});
+                         tmp = m2.suffix();
                      }
 
                      return n;
