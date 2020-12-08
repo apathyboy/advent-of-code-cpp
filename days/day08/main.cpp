@@ -69,6 +69,22 @@ private:
     bool           inf_loop_detected_ = false;
 };
 
+game_console::program read_input_program(std::istream&& i)
+{
+    std::map<std::string, game_console::OP_TYPE> op_map = {
+        {"nop", game_console::OP_TYPE::NOP},
+        {"jmp", game_console::OP_TYPE::JMP},
+        {"acc", game_console::OP_TYPE::ACC}};
+    ;
+
+    // clang-format off
+    return ranges::getlines(i) 
+        | rv::transform([&op_map](auto&& s) {
+            return game_console::instruction{op_map.at(s.substr(0, 3)), std::stoi(s.substr(4))}; })
+        | ranges::to<std::vector>;
+    // clang-format on
+}
+
 int part1(const game_console::program& p)
 {
     game_console console{p};
@@ -109,22 +125,6 @@ int part2(game_console::program p)
     }
 
     return accumulator;
-}
-
-game_console::program read_input_program(std::istream&& i)
-{
-    std::map<std::string, game_console::OP_TYPE> op_map = {
-        {"nop", game_console::OP_TYPE::NOP},
-        {"jmp", game_console::OP_TYPE::JMP},
-        {"acc", game_console::OP_TYPE::ACC}};
-    ;
-
-    // clang-format off
-    return ranges::getlines(i) 
-        | rv::transform([&op_map](auto&& s) {
-            return game_console::instruction{op_map.at(s.substr(0, 3)), std::stoi(s.substr(4))}; })
-        | ranges::to<std::vector>;
-    // clang-format on
 }
 
 #ifndef UNIT_TESTING
