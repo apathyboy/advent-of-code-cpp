@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.16)
 project(aoc2020cpp)
 
 find_package(
+    Catch2
+    CONFIG
+    REQUIRED)
+
+find_package(
     fmt
     CONFIG
     REQUIRED)
@@ -21,6 +26,9 @@ add_library(
     esb::aoc2020
     ALIAS
     aoc2020)
+
+include(CTest)
+include(Catch)
 
 target_include_directories(
     aoc2020
