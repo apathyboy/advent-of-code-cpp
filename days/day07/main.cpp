@@ -3,6 +3,8 @@
 #include <range/v3/all.hpp>
 
 #include <fstream>
+#include <iostream>
+#include <optional>
 #include <regex>
 #include <string>
 #include <unordered_map>
@@ -10,6 +12,7 @@
 
 
 using namespace ranges;
+namespace rv = ranges::views;
 
 const auto search_regex   = std::regex(R"((.*) bags contain (.*))");
 const auto contents_regex = std::regex(R"((\d+) (.*?) bag)");
@@ -90,23 +93,22 @@ int main()
     const std::string bag_type = "shiny gold";
 
     auto input = getlines(ifs) | views::transform([](auto&& s) {
-                     std::smatch m;
-                     std::regex_match(s, m, search_regex);
+                     std::smatch         m, m2;
+                     std::optional<node> n;
 
-                     node n;
-                     n.name = m.str(1);
+                     if (std::regex_match(s, m, search_regex)) {
+                         n = node{m.str(1)};
 
-                     auto tmp = m.str(2);
-
-                     std::smatch m2;
-                     while (std::regex_search(tmp, m2, contents_regex)) {
-                         n.children.push_back({m2.str(2), std::stoi(m2.str(1))});
-                         tmp = m2.suffix();
+                         for (auto tmp = m.str(2);
+                              std::regex_search(tmp, m2, contents_regex);) {
+                             n->children.push_back({m2.str(2), std::stoi(m2.str(1))});
+                             tmp = m2.suffix();
+                         }
                      }
 
-                     return n;
+                     return n.value();
                  })
-                 | to<std::vector<node>>;
+                 | to<std::vector>;
 
     fmt::print("Part 1 Solution: {}\n", part1(input, bag_type));
 
