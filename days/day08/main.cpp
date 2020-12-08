@@ -3,7 +3,6 @@
 #include <range/v3/all.hpp>
 
 #include <fstream>
-#include <iostream>
 #include <set>
 
 namespace rv = ranges::views;
@@ -13,88 +12,97 @@ struct instruction {
     int         amt;
 };
 
-int part1(const std::vector<instruction>& instructions)
-{
-    int  accumulator = 0, next_instruction = 0;
-    bool inf_loop_detected = false;
+class game_console {
+public:
+    struct instruction {
+        std::string name;
+        int         amt;
+    };
 
-    std::set<int> cache;
+    using program = std::vector<instruction>;
 
-    while (!inf_loop_detected) {
-        auto& i = instructions[next_instruction];
+    struct result {
+        int  acc_state;
+        bool inf_loop_reached;
+    };
 
-        if (i.name == "acc") {
-            accumulator += i.amt;
-            ++next_instruction;
-        }
-        else if (i.name == "jmp") {
-            next_instruction += i.amt;
-        }
-        else if (i.name == "nop") {
-            ++next_instruction;
-        }
-
-        if (cache.contains(next_instruction)) {
-            inf_loop_detected = true;
-        }
-        else {
-            cache.emplace(next_instruction);
-        }
+public:
+    game_console(std::vector<instruction> program)
+        : program_{std::move(program)}
+    {
     }
 
-    return accumulator;
-}
-
-int part2(const std::vector<instruction>& instructions)
-{
-    bool program_terminate = false;
-    int  accumulator       = 0;
-    int  check             = 0;
-
-    while (!program_terminate) {
-        while (instructions[check].name != "nop" && instructions[check].name != "jmp"
-               && check < instructions.size())
-            ++check;
-
-        int next_instruction   = 0;
-        accumulator            = 0;
-        bool inf_loop_detected = false;
-
+    result run()
+    {
         std::set<int> cache;
 
-        while (!inf_loop_detected && !program_terminate) {
-            auto& i = instructions[next_instruction];
+        while (!inf_loop_detected_ && !program_terminate_) {
+            auto& i = program_[next_instruction_];
 
-            auto op = i.name;
-
-            if (next_instruction == check) {
-                op = (op == "jmp") ? "nop" : "jmp";
+            if (i.name == "acc") {
+                accumulator_ += i.amt;
+                ++next_instruction_;
+            }
+            else if (i.name == "jmp") {
+                next_instruction_ += i.amt;
+            }
+            else if (i.name == "nop") {
+                ++next_instruction_;
             }
 
-            if (op == "acc") {
-                accumulator += i.amt;
-                ++next_instruction;
+            if (next_instruction_ >= program_.size()) {
+                program_terminate_ = true;
             }
-            else if (op == "jmp") {
-                next_instruction += i.amt;
-            }
-            else if (op == "nop") {
-                ++next_instruction;
-            }
-
-            if (next_instruction >= instructions.size()) {
-                program_terminate = true;
-            }
-
-            if (cache.contains(next_instruction)) {
-                inf_loop_detected = true;
+            else if (cache.contains(next_instruction_)) {
+                inf_loop_detected_ = true;
             }
             else {
-                cache.emplace(next_instruction);
+                cache.emplace(next_instruction_);
             }
         }
 
+        return {accumulator_, inf_loop_detected_};
+    }
+
+private:
+    program program_;
+    int     accumulator_       = 0;
+    int     next_instruction_  = 0;
+    bool    program_terminate_ = false;
+    bool    inf_loop_detected_ = false;
+};
+
+int part1(const game_console::program& p)
+{
+    game_console console{p};
+
+    auto [acc, _] = console.run();
+
+    return acc;
+}
+
+int part2(const game_console::program& p)
+{
+    bool found       = false;
+    int  accumulator = 0, check = 0;
+
+    while (!found) {
+        while (p[check].name != "nop" && p[check].name != "jmp")
+            ++check;
+
+        game_console::program p_test = p;
+        p_test[check].name           = (p_test[check].name == "jmp") ? "nop" : "jmp";
+
         ++check;
+
+        game_console console{p_test};
+
+        auto [acc, inf_loop] = console.run();
+
+        if (!inf_loop) {
+            found       = true;
+            accumulator = acc;
+        }
     }
 
     return accumulator;
@@ -106,13 +114,15 @@ int main()
 
     std::ifstream ifs{"days/day08/input.txt"};
 
-    auto instructions = ranges::getlines(ifs) | rv::transform([](auto&& s) {
-                            return instruction{s.substr(0, 3), std::stoi(s.substr(4))};
-                        })
-                        | ranges::to<std::vector>;
+    // clang-format off
+    auto program = ranges::getlines(ifs) 
+        | rv::transform([](auto&& s) {
+            return game_console::instruction{s.substr(0, 3), std::stoi(s.substr(4))}; })
+        | ranges::to<std::vector>;
+    // clang-format on
 
-    fmt::print("Part 1 Solution: {}\n", part1(instructions));
-    fmt::print("Part 1 Solution: {}\n", part2(instructions));
+    fmt::print("Part 1 Solution: {}\n", part1(program));
+    fmt::print("Part 1 Solution: {}\n", part2(program));
 
     return 0;
 }
