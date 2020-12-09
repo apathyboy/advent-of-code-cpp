@@ -30,7 +30,7 @@ int64_t part1(const std::vector<int64_t>& input, int window_size)
                 | rv::transform([target](auto i) { return target - i; })
                 | rv::unique
                 | rv::filter([&rng](const auto& p) { return ranges::contains(rng, p); })) == 0; })
-        | rv::transform([](const auto& rng) { return ranges::front(rng | rv::reverse); })
+        | rv::transform([](const auto& rng) { return ranges::back(rng); })
         | rv::take(1);
     // clang-format on
 
