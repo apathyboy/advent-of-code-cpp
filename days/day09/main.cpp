@@ -39,14 +39,12 @@ int64_t part1(const std::vector<int64_t>& input, int window_size)
 
 int64_t part2(const std::vector<int64_t>& input, int64_t target)
 {
-    int window_size = 2;
-
     std::optional<int64_t> result;
 
-    while (window_size < input.size() && !result) {
+    for (int window_size = 2; window_size < input.size() && !result;) {
         // clang-format off
         auto rng = input 
-            | rv::sliding(window_size) 
+            | rv::sliding(window_size++) 
             | rv::filter([target](const auto& rng) { return ranges::accumulate(rng, int64_t{0}) == target; })
             | rv::transform([](auto&& rng) {
                 auto [min, max] = ranges::minmax_element(rng);
@@ -56,8 +54,6 @@ int64_t part2(const std::vector<int64_t>& input, int64_t target)
         if (ranges::distance(rng) > 0) {
             result = ranges::front(rng);
         }
-
-        ++window_size;
     }
 
     return result.value();
