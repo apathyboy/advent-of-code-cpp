@@ -38,33 +38,29 @@ int64_t part1(const std::vector<int64_t>& input, int window_size)
     return ranges::front(rng);
 }
 
-int64_t part2(const std::vector<int64_t>& input, int window_size)
+int64_t part2(const std::vector<int64_t>& input, int64_t target)
 {
-    int64_t target = part1(input, window_size);
+    int window_size = 2;
 
-    int start_idx = 0, end_idx = 0;
+    std::optional<int64_t> result;
 
-    bool found = false;
+    while (window_size < input.size() && !result) {
+        auto rng = input | rv::sliding(window_size) | rv::filter([target](const auto& rng) {
+                       return ranges::accumulate(rng, int64_t{0}) == target;
+                   })
+                   | rv::transform([](auto&& rng) {
+                         auto [min, max] = ranges::minmax_element(rng);
+                         return *min + *max;
+                     });
 
-    while (!found) {
-        int64_t acc = 0;
-        for (int i = start_idx; i < input.size() && acc < target; ++i) {
-            acc += input[i];
-            ++end_idx;
+        if (ranges::distance(rng) > 0) {
+            result = ranges::front(rng);
         }
 
-        if (acc == target) {
-            found = true;
-        }
-        else {
-            ++start_idx;
-            end_idx = start_idx;
-        }
+        ++window_size;
     }
 
-    auto minmax = std::minmax_element(input.begin() + start_idx, input.begin() + end_idx);
-
-    return *minmax.first + *minmax.second;
+    return result.value();
 }
 
 #ifndef UNIT_TESTING
@@ -78,7 +74,7 @@ int main()
     int window_size = 25;
 
     fmt::print("Part 1 Solution: {}\n", part1(input, window_size));
-    fmt::print("Part 1 Solution: {}\n", part2(input, window_size));
+    fmt::print("Part 2_2 Solution: {}\n", part2(input, part1(input, window_size)));
 
     return 0;
 }
@@ -123,7 +119,10 @@ TEST_CASE("Can solve day 9 problems")
 
     SECTION("Can solve part 1 example") { REQUIRE(127 == part1(input, window_size)); }
 
-    SECTION("Can solve part 2 example") { REQUIRE(62 == part2(input, window_size)); }
+    SECTION("Can solve part 2 example")
+    {
+        REQUIRE(62 == part2(input, part1(input, window_size)));
+    }
 }
 
 #endif
