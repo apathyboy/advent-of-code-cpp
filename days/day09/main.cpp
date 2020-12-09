@@ -67,7 +67,7 @@ int64_t part2(const std::vector<int64_t>& input, int64_t target)
 
 int main()
 {
-    fmt::print("Advent of Code 2020 - Day 08\n");
+    fmt::print("Advent of Code 2020 - Day 09\n");
 
     auto input = read_input(std::ifstream{"days/day09/input.txt"});
 
