@@ -23,7 +23,7 @@ int64_t part1(const std::vector<int64_t>& input, int window_size)
     auto rng = input 
         | rv::sliding(window_size + 1) 
         | rv::filter([](const auto& rng) {
-            int64_t target = ranges::front(rng | rv::reverse);
+            int64_t target = ranges::back(rng);
 
             return ranges::distance(rng 
                 | rv::drop_last(1)
