@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <fstream>
-#include <iostream>
 #include <optional>
 
 namespace rv = ranges::views;
@@ -45,13 +44,14 @@ int64_t part2(const std::vector<int64_t>& input, int64_t target)
     std::optional<int64_t> result;
 
     while (window_size < input.size() && !result) {
-        auto rng = input | rv::sliding(window_size) | rv::filter([target](const auto& rng) {
-                       return ranges::accumulate(rng, int64_t{0}) == target;
-                   })
-                   | rv::transform([](auto&& rng) {
-                         auto [min, max] = ranges::minmax_element(rng);
-                         return *min + *max;
-                     });
+        // clang-format off
+        auto rng = input 
+            | rv::sliding(window_size) 
+            | rv::filter([target](const auto& rng) { return ranges::accumulate(rng, int64_t{0}) == target; })
+            | rv::transform([](auto&& rng) {
+                auto [min, max] = ranges::minmax_element(rng);
+                return *min + *max; });
+        // clang-format on
 
         if (ranges::distance(rng) > 0) {
             result = ranges::front(rng);
