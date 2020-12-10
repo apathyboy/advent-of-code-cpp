@@ -6,11 +6,6 @@
 namespace ra = ranges::actions;
 namespace rv = ranges::views;
 
-int highest_rating(const std::vector<int>& input)
-{
-    return ranges::max(input) + 3;
-}
-
 int64_t combinations(int64_t d)
 {
     // TODO solve for the general case
@@ -20,21 +15,26 @@ int64_t combinations(int64_t d)
     else if (d == 3) {
         return 4;
     }
+    else if (d == 2) {
+        return 2;
+    }
 
-    return 2;
+    return 1;
 }
 
-auto generate_diffs(const std::vector<int>& input)
+auto diff_between_elements(const std::vector<int>& input)
 {
+    auto highest_rating = ranges::max(input) + 3;
+
     return rv::zip(
                rv::concat(rv::single(0), input),
-               rv::concat(input, rv::single(highest_rating(input))))
+               rv::concat(input, rv::single(highest_rating)))
            | rv::transform([](auto&& p) { return p.second - p.first; });
 }
 
 int64_t part1(const std::vector<int>& input)
 {
-    auto diffs = generate_diffs(input);
+    auto diffs = diff_between_elements(input);
 
     return ranges::count(diffs, 1) * ranges::count(diffs, 3);
 }
@@ -43,18 +43,17 @@ int64_t part2(const std::vector<int>& input)
 {
     // clang-format off
     return ranges::accumulate(
-        generate_diffs(input)
+        diff_between_elements(input)
             | rv::group_by(std::equal_to<int>{}) 
-            | rv::filter([](const auto& r) {
-                  return (ranges::distance(r) > 1 && ranges::front(r) == 1);
-              })
-            | rv::transform([](auto r) { return combinations(ranges::distance(r)); }),
+            | rv::filter([](const auto& r) { return (ranges::front(r) == 1); })
+            | rv::transform([](auto&& r) { return combinations(ranges::distance(r)); }),
         int64_t{1},
         std::multiplies<>{});
     // clang-format on
 }
 
 #ifndef UNIT_TESTING
+
 int main()
 {
     fmt::print("Advent of Code 2020 - Day 10\n");
