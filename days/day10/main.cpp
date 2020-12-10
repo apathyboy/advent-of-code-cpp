@@ -13,6 +13,7 @@ int highest_rating(const std::vector<int>& input)
 
 int64_t combinations(int64_t d)
 {
+    // TODO solve for the general case
     if (d == 4) {
         return 7;
     }
