@@ -136,7 +136,7 @@ int main()
     auto program = read_input_program(std::ifstream{"days/day08/input.txt"});
 
     fmt::print("Part 1 Solution: {}\n", part1(program));
-    fmt::print("Part 1 Solution: {}\n", part2(std::move(program)));
+    fmt::print("Part 2 Solution: {}\n", part2(std::move(program)));
 
     return 0;
 }

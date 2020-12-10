@@ -70,7 +70,7 @@ int main()
     int window_size = 25;
 
     fmt::print("Part 1 Solution: {}\n", part1(input, window_size));
-    fmt::print("Part 2_2 Solution: {}\n", part2(input, part1(input, window_size)));
+    fmt::print("Part 2 Solution: {}\n", part2(input, part1(input, window_size)));
 
     return 0;
 }

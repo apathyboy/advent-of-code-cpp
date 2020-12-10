@@ -1,6 +1,9 @@
 add_executable(day10 main.cpp)
 
-target_compile_options(day10 PRIVATE -wd4459)
+target_compile_options(
+    day10
+    PRIVATE -wd4459
+            -wd4702)
 
 target_link_libraries(
     day10
@@ -19,6 +22,7 @@ target_link_libraries(
 target_compile_options(
     day10_tests
     PRIVATE -wd4459
+            -wd4702
             -wd6330)
 
 target_compile_definitions(day10_tests PRIVATE UNIT_TESTING)
