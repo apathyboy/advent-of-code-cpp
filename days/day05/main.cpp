@@ -41,7 +41,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 05\n");
 
-    std::ifstream ifs{"days/day05/input.txt"};
+    std::ifstream ifs{"days/day05/puzzle.in"};
 
     auto input = ranges::getlines(ifs) | rv::transform(calculate_seat_id)
                  | ranges::to<std::vector<int>>;

@@ -65,7 +65,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 09\n");
 
-    auto input = read_input(std::ifstream{"days/day09/input.txt"});
+    auto input = read_input(std::ifstream{"days/day09/puzzle.in"});
 
     int window_size = 25;
 

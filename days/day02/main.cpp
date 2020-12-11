@@ -64,7 +64,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 02\n");
 
-    std::ifstream ifs{"days/day02/input.txt"};
+    std::ifstream ifs{"days/day02/puzzle.in"};
 
     auto input = ranges::getlines(ifs) | rv::transform(parse_password_rule_string)
                  | ranges::to<std::vector>;

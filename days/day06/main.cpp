@@ -47,7 +47,7 @@ int main()
     fmt::print("Advent of Code 2020 - Day 06\n");
 
 
-    std::ifstream ifs{"days/day06/input.txt"};
+    std::ifstream ifs{"days/day06/puzzle.in"};
 
     auto input = ranges::getlines(ifs) | rv::transform([](auto&& s) {
                      ranges::sort(s);

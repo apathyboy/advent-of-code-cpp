@@ -48,7 +48,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 01\n");
 
-    std::ifstream ifs{"days/day01/input.txt"};
+    std::ifstream ifs{"days/day01/puzzle.in"};
 
     // clang-format off
     auto input = ranges::getlines(ifs) 
