@@ -51,4 +51,3 @@ target_compile_options(
 target_link_libraries(aoc2020 PRIVATE range-v3::meta)
 
 add_subdirectory(days)
-add_subdirectory(tests)
