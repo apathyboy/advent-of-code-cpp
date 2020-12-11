@@ -118,50 +118,56 @@ bool is_visibly_occupied(
         return is_visibly_occupied(input, stride, adjacent_idx.value(), d);
 }
 
-std::vector<int64_t> find_visible_indexes(int64_t map_size, int64_t stride, int64_t idx)
-{
-    auto adjacent_indexes = ALL_DIRECTIONS | rv::transform([map_size, stride, idx](auto dir) {
-                                return calculate_adjacent_index(map_size, stride, idx, dir);
-                            })
-                            | rv::filter([](const auto& idx) { return idx.has_value(); })
-                            | rv::transform([](const auto& idx) { return idx.value(); })
-                            | ranges::to<std::vector>;
-
-    return adjacent_indexes;
-}
-
-
 int count_occupied_visible_adjacent(
     const std::vector<char>& input,
     int64_t                  stride,
     int64_t                  idx)
 {
-    auto top_left   = is_visibly_occupied(input, stride, idx, direction::TOP_LEFT) ? 1 : 0;
-    auto top_middle = is_visibly_occupied(input, stride, idx, direction::TOP_MIDDLE) ? 1 : 0;
-    auto top_right  = is_visibly_occupied(input, stride, idx, direction::TOP_RIGHT) ? 1 : 0;
-
-    auto left  = is_visibly_occupied(input, stride, idx, direction::LEFT) ? 1 : 0;
-    auto right = is_visibly_occupied(input, stride, idx, direction::RIGHT) ? 1 : 0;
-
-    auto bottom_left = is_visibly_occupied(input, stride, idx, direction::BOTTOM_LEFT) ? 1 : 0;
-    auto bottom_middle = is_visibly_occupied(input, stride, idx, direction::BOTTOM_MIDDLE) ? 1
-                                                                                           : 0;
-    auto bottom_right = is_visibly_occupied(input, stride, idx, direction::BOTTOM_RIGHT) ? 1
-                                                                                         : 0;
-
-    auto counter = top_left + top_middle + top_right + left + right + bottom_left
-                   + bottom_middle + bottom_right;
-
-    return counter;
+    return ranges::accumulate(
+        ALL_DIRECTIONS | rv::transform([&input, stride, idx](auto dir) {
+            return is_visibly_occupied(input, stride, idx, dir) ? 1 : 0;
+        }),
+        0);
 }
 
-void print_map(const std::vector<char>& input, int64_t stride)
+auto part1_map_rule(const std::vector<char>& input, int64_t stride)
 {
-    for (auto line : input | rv::chunk(stride)) {
-        fmt::print("{}\n", line | ranges::to<std::string>);
-    }
+    return [&input, stride](auto&& rng) {
+        auto [idx, c] = rng;
 
-    fmt::print("\n\n");
+        if (c != '.') {
+            auto occupied_adjacents = count_occupied_adjacent(input, stride, idx);
+
+            if (c == 'L' && occupied_adjacents == 0) {
+                c = '#';
+            }
+            else if (c == '#' && occupied_adjacents >= 4) {
+                c = 'L';
+            }
+        }
+
+        return c;
+    };
+}
+
+auto part2_map_rule(const std::vector<char>& input, int64_t stride)
+{
+    return [&input, stride](auto&& rng) {
+        auto [idx, c] = rng;
+
+        if (c != '.') {
+            auto occupied_adjacents = count_occupied_visible_adjacent(input, stride, idx);
+
+            if (c == 'L' && occupied_adjacents == 0) {
+                c = '#';
+            }
+            else if (c == '#' && occupied_adjacents >= 5) {
+                c = 'L';
+            }
+        }
+
+        return c;
+    };
 }
 
 int64_t part1(std::vector<char> input, int64_t stride)
@@ -171,26 +177,9 @@ int64_t part1(std::vector<char> input, int64_t stride)
     do {
         last_counter = current_counter;
 
-        print_map(input, stride);
-
         auto tmp = input;
 
-        input = rv::enumerate(input) | rv::transform([&tmp, stride](auto&& rng) {
-                    auto [idx, c] = rng;
-
-                    if (c != '.') {
-                        auto occupied_adjacents = count_occupied_adjacent(tmp, stride, idx);
-
-                        if (c == 'L' && occupied_adjacents == 0) {
-                            c = '#';
-                        }
-                        else if (c == '#' && occupied_adjacents >= 4) {
-                            c = 'L';
-                        }
-                    }
-
-                    return c;
-                })
+        input = rv::enumerate(input) | rv::transform(part1_map_rule(tmp, stride))
                 | ranges::to<std::vector>;
 
         current_counter = ranges::count(input, '#');
@@ -206,27 +195,9 @@ int64_t part2(std::vector<char> input, int64_t stride)
     do {
         last_counter = current_counter;
 
-        print_map(input, stride);
-
         auto tmp = input;
 
-        input = rv::enumerate(input) | rv::transform([&tmp, stride](auto&& rng) {
-                    auto [idx, c] = rng;
-
-                    if (c != '.') {
-                        auto occupied_adjacents =
-                            count_occupied_visible_adjacent(tmp, stride, idx);
-
-                        if (c == 'L' && occupied_adjacents == 0) {
-                            c = '#';
-                        }
-                        else if (c == '#' && occupied_adjacents >= 5) {
-                            c = 'L';
-                        }
-                    }
-
-                    return c;
-                })
+        input = rv::enumerate(input) | rv::transform(part2_map_rule(tmp, stride))
                 | ranges::to<std::vector>;
 
         current_counter = ranges::count(input, '#');
