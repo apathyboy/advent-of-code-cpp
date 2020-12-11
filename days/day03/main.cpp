@@ -1,51 +1,41 @@
 
 #include <fmt/core.h>
+#include <range/v3/all.hpp>
 
 #include <fstream>
 #include <string>
 
-int part1(std::istream&& input)
+namespace rv = ranges::views;
+
+auto slope_type1_hits(const std::vector<std::string>& input, int slope)
 {
-    std::string str;
-    int         slope = 3, depth = 0, count = 0;
+    auto hit_test = [slope](auto&& p) {
+        auto&& [depth, line] = p;
+        return (line[(depth * slope) % line.length()] == '#') ? 1 : 0;
+    };
 
-    while (std::getline(input, str)) {
-        if (str[(depth * slope) % str.length()] == '#')
-            ++count;
-
-        ++depth;
-    }
-
-    return count;
+    return ranges::accumulate(rv::enumerate(input) | rv::transform(hit_test), 0);
 }
 
-int part2(std::istream&& input)
+auto slope_type2_hits(const std::vector<std::string>& input)
 {
-    std::string str;
-    int         slope1 = 1, slope2 = 3, slope3 = 5, slope4 = 7;
-    int         count1 = 0, count2 = 0, count3 = 0, count4 = 0, count5 = 0;
-    int         depth = 0;
+    auto hit_test = [](auto&& p) {
+        auto&& [depth, line] = p;
+        return (depth % 2 == 0 && line[(depth / 2) % line.length()] == '#') ? 1 : 0;
+    };
 
-    while (std::getline(input, str)) {
-        if (str[(depth * slope1) % str.length()] == '#')
-            ++count1;
+    return ranges::accumulate(rv::enumerate(input) | rv::transform(hit_test), 0);
+}
 
-        if (str[(depth * slope2) % str.length()] == '#')
-            ++count2;
+int part1(const std::vector<std::string>& input)
+{
+    return slope_type1_hits(input, 3);
+}
 
-        if (str[(depth * slope3) % str.length()] == '#')
-            ++count3;
-
-        if (str[(depth * slope4) % str.length()] == '#')
-            ++count4;
-
-        if (depth % 2 == 0 && str[(depth / 2) % str.length()] == '#')
-            ++count5;
-
-        ++depth;
-    }
-
-    return count1 * count2 * count3 * count4 * count5;
+int part2(const std::vector<std::string>& input)
+{
+    return slope_type1_hits(input, 1) * slope_type1_hits(input, 3) * slope_type1_hits(input, 5)
+           * slope_type1_hits(input, 7) * slope_type2_hits(input);
 }
 
 #ifndef UNIT_TESTING
@@ -54,8 +44,12 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 03\n");
 
-    fmt::print("Part 1 Solution: {}\n", part1(std::ifstream{"days/day03/input.txt"}));
-    fmt::print("Part 2 Solution: {}\n", part2(std::ifstream{"days/day03/input.txt"}));
+    std::ifstream ifs{"days/day03/input.txt"};
+
+    auto input = ranges::getlines(ifs) | ranges::to<std::vector>;
+
+    fmt::print("Part 1 Solution: {}\n", part1(input));
+    fmt::print("Part 2 Solution: {}\n", part2(input));
 
     return 0;
 }
@@ -82,9 +76,11 @@ TEST_CASE("Can solve day 3 problems")
 #...##....#
 .#..#...#.#)";
 
-    SECTION("Can solve part 1 example") { REQUIRE(7 == part1(std::move(ss))); }
+    auto input = ranges::getlines(ss) | ranges::to<std::vector>;
 
-    SECTION("Can solve part 2 example") { REQUIRE(336 == part2(std::move(ss))); }
+    SECTION("Can solve part 1 example") { REQUIRE(7 == part1(input)); }
+
+    SECTION("Can solve part 2 example") { REQUIRE(336 == part2(input)); }
 }
 
 #endif
