@@ -118,9 +118,11 @@ int main()
 
 TEST_CASE("Can solve day 11 problems")
 {
-    std::stringstream ss;
+    SECTION("Can solve part 1 example")
+    {
+        std::stringstream ss;
 
-    ss << R"(L.LL.LL.LL
+        ss << R"(L.LL.LL.LL
 LLLLLLL.LL
 L.L.L..L..
 LLLL.LL.LL
@@ -131,9 +133,10 @@ LLLLLLLLLL
 L.LLLLLL.L
 L.LLLLL.LL)";
 
-    auto [input, stride] = read_input(std::move(ss));
+        auto [input, stride] = read_input(std::move(ss));
 
-    SECTION("Can solve part 1 example") { REQUIRE(37 == part1(input, stride)); }
+        REQUIRE(37 == part1(input, stride));
+    }
 
     SECTION("Can solve part 2 example") { REQUIRE(0 == part2()); }
 }
