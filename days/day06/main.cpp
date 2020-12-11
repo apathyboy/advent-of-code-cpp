@@ -3,26 +3,23 @@
 #include <range/v3/all.hpp>
 
 #include <fstream>
+#include <iostream>
 #include <set>
 #include <string>
 
+namespace ra = ranges::actions;
 namespace rv = ranges::views;
 
 int64_t part1(const std::vector<std::string>& input)
 {
-    std::set<char> q1;
-    int64_t        sum = 0;
+    // clang-format off
+    auto rng = input 
+        | rv::split("") 
+        | rv::transform([](auto&& rng) { 
+            return ranges::distance(rng | rv::join | ranges::to<std::vector> | ra::sort | ra::unique); });
+    // clang-format on
 
-    for (const auto& str : input) {
-        if (str.length() == 0) {
-            sum += q1.size();
-            q1.clear();
-        }
-
-        ranges::insert(q1, str);
-    }
-
-    return sum;
+    return ranges::accumulate(rng, int64_t{0});
 }
 
 int64_t part2()
@@ -59,7 +56,7 @@ int main()
     fmt::print("Advent of Code 2020 - Day 06\n");
 
 
-    std::ifstream ifs{"days/day06/input.txt"};
+    std::ifstream ifs{"days/day06/example.txt"};
 
     auto input = ranges::getlines(ifs) | ranges::to<std::vector>;
 
