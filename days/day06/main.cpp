@@ -22,46 +22,76 @@ int64_t part1(const std::vector<std::string>& input)
     return ranges::accumulate(rng, int64_t{0});
 }
 
-int64_t part2()
+int64_t part2(const std::vector<std::string>& input)
 {
-    int64_t sum = 0;
+    // clang-format off
+    auto rng = input 
+        | rv::split("") 
+        | rv::transform([](auto&& rng) {
+            auto first = ranges::front(rng)| ranges::to<std::vector>;
 
-    std::string str;
-    std::string questions;
+            for (auto s : rv::tail(rng)) {
+                first = rv::set_intersection(first, s) | ranges::to<std::vector>;
+            }
 
-    std::ifstream ifs{"days/day06/input.txt"};
+            return ranges::distance(first); });
+    // clang-format on
 
-    std::getline(ifs, questions);
-    ranges::sort(questions);
-
-    while (std::getline(ifs, str)) {
-        ranges::sort(str);
-
-        if (str.length() == 0) {
-            sum += static_cast<int>(questions.size());
-
-            std::getline(ifs, questions);
-            ranges::sort(questions);
-        }
-        else {
-            questions = rv::set_intersection(questions, str) | ranges::to<std::string>;
-        }
-    }
-
-    return sum;
+    return ranges::accumulate(rng, int64_t{0});
 }
+
+#ifndef UNIT_TESTING
 
 int main()
 {
     fmt::print("Advent of Code 2020 - Day 06\n");
 
 
-    std::ifstream ifs{"days/day06/example.txt"};
+    std::ifstream ifs{"days/day06/input.txt"};
 
-    auto input = ranges::getlines(ifs) | ranges::to<std::vector>;
+    auto input = ranges::getlines(ifs) | rv::transform([](auto&& s) {
+                     ranges::sort(s);
+                     return s;
+                 })
+                 | ranges::to<std::vector>;
 
     fmt::print("Part 1 Solution: {}\n", part1(input));
-    fmt::print("Part 2 Solution: {}\n", part2());
+    fmt::print("Part 2 Solution: {}\n", part2(input));
 
     return 0;
 }
+
+#else
+
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <sstream>
+
+TEST_CASE("Can solve day 6 problems")
+{
+    std::stringstream ss;
+
+    ss << R"(abc
+
+a
+b
+c
+
+ab
+ac
+
+a
+a
+a
+a
+
+b)";
+
+    auto input = ranges::getlines(ss) | ranges::to<std::vector>;
+
+    SECTION("Can solve part 1 example") { REQUIRE(11 == part1(input)); }
+
+    SECTION("Can solve part 2 example") { REQUIRE(6 == part2(input)); }
+}
+
+#endif
