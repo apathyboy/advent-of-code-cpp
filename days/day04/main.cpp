@@ -68,40 +68,48 @@ auto is_valid_part2_field = [](const field_t& f) {
     return true;
 };
 
-int main()
+int part1(const std::vector<std::string>& lines)
 {
-    fmt::print("Advent of Code 2020 - Day 04\n");
+    int passports = 0;
 
-    std::ifstream ifs{"days/day04/input.txt"};
+    size_t fields = 0;
 
-    std::string str;
-
-    int part1_passports = 0;
-    int part2_passports = 0;
-
-    size_t part1_fields = 0;
-    size_t part2_fields = 0;
-
-    while (std::getline(ifs, str)) {
+    for (const auto& str : lines) {
         if (str.length() == 0) {
-            if (part1_fields == 7)
-                ++part1_passports;
+            if (fields == 7)
+                ++passports;
 
-            if (part2_fields == 7)
-                ++part2_passports;
-
-            part1_fields = 0;
-            part2_fields = 0;
+            fields = 0;
         }
         else {
             // clang-format off
-            part1_fields += distance(str 
+            fields += distance(str 
                 | views::split(' ') 
                 | views::transform(combine_chars)
                 | views::transform(to_passport_field)
                 | views::filter(is_valid_part1_field));
-                
-            part2_fields += distance(str 
+            // clang-format on
+        }
+    }
+
+    return passports;
+}
+
+int part2(const std::vector<std::string>& lines)
+{
+    int    passports = 0;
+    size_t fields    = 0;
+
+    for (const auto& str : lines) {
+        if (str.length() == 0) {
+            if (fields == 7)
+                ++passports;
+
+            fields = 0;
+        }
+        else {
+            // clang-format off
+            fields += distance(str 
                 | views::split(' ') 
                 | views::transform(combine_chars)
                 | views::transform(to_passport_field)
@@ -110,8 +118,54 @@ int main()
         }
     }
 
-    fmt::print("Part 1 Solution: {}\n", part1_passports);
-    fmt::print("Part 2 Solution: {}\n", part2_passports);
+    return passports;
+}
+
+#ifndef UNIT_TESTING
+
+int main()
+{
+    fmt::print("Advent of Code 2020 - Day 04\n");
+
+    std::ifstream ifs{"days/day04/input.txt"};
+
+    auto input = ranges::getlines(ifs) | ranges::to<std::vector>;
+
+    fmt::print("Part 1 Solution: {}\n", part1(input));
+    fmt::print("Part 2 Solution: {}\n", part2(input));
 
     return 0;
 }
+
+#else
+
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <sstream>
+
+TEST_CASE("Can solve day 4 problems")
+{
+    std::stringstream ss;
+
+    ss << R"(ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
+byr:1937 iyr:2017 cid:147 hgt:183cm
+
+iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884
+hcl:#cfa07d byr:1929
+
+hcl:#ae17e1 iyr:2013
+eyr:2024
+ecl:brn pid:760753108 byr:1931
+hgt:179cm
+
+hcl:#cfa07d eyr:2025 pid:166559648
+iyr:2011 ecl:brn hgt:59in)";
+
+    auto input = ranges::getlines(ss) | ranges::to<std::vector>;
+
+    SECTION("Can solve part 1 example") { REQUIRE(2 == part1(input)); }
+
+    SECTION("Can solve part 2 example") { REQUIRE(2 == part2(input)); }
+}
+
+#endif
