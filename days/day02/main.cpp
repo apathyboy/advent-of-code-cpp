@@ -1,39 +1,143 @@
-
-#include <aoc2020/aoc2020.hpp>
-
 #include <fmt/core.h>
+
+#pragma warning(push)
+#pragma warning(disable : 28278)
 #include <range/v3/all.hpp>
+#pragma warning(pop)
 
 #include <fstream>
-#include <iostream>
+#include <sstream>
 
-using namespace ranges;
+namespace rv = ranges::views;
 
-using namespace aoc2020;
+struct corporate_policy {
+    int  min_count;
+    int  max_count;
+    char target;
+};
+
+using password_vec = std::vector<std::pair<corporate_policy, std::string>>;
+
+std::pair<corporate_policy, std::string> parse_password_rule_string(const std::string& str)
+{
+    char             junk;
+    corporate_policy p;
+    std::string      s;
+
+    std::stringstream ss{str};
+
+    ss >> p.min_count >> junk >> p.max_count >> p.target >> junk >> s;
+
+    return std::make_pair(p, s);
+}
+
+bool is_valid_day2_part1_pw(const std::pair<corporate_policy, std::string>& pw)
+{
+    auto c = std::ranges::count(pw.second, pw.first.target);
+    return (c >= pw.first.min_count && c <= pw.first.max_count);
+}
+
+bool is_valid_day2_part2_pw(const std::pair<corporate_policy, std::string>& pw)
+{
+    const auto& str    = pw.second;
+    int         pos1   = pw.first.min_count - 1;
+    int         pos2   = pw.first.max_count - 1;
+    char        target = pw.first.target;
+
+    return (str[pos1] == target && str[pos2] != target)
+           || (str[pos1] != target && str[pos2] == target);
+}
+
+int64_t part1(const password_vec& input)
+{
+    return ranges::distance(input | rv::filter(is_valid_day2_part1_pw));
+}
+
+int64_t part2(const password_vec& input)
+{
+    return ranges::distance(input | rv::filter(is_valid_day2_part2_pw));
+}
+
+#ifndef UNIT_TESTING
 
 int main()
 {
     fmt::print("Advent of Code 2020 - Day 02\n");
 
-    auto parse      = [](const auto& s) { return parse_password_rule_string(s); };
-    auto selection1 = [](const auto& entry) { return is_valid_day2_part1_pw(entry); };
-    auto selection2 = [](const auto& entry) { return is_valid_day2_part2_pw(entry); };
+    std::ifstream ifs{"days/day02/input.txt"};
 
-    {
-        std::ifstream ifs{"days/day02/input.txt"};
+    auto input = ranges::getlines(ifs) | rv::transform(parse_password_rule_string)
+                 | ranges::to<std::vector>;
 
-        auto valid = getlines(ifs) | views::transform(parse) | views::filter(selection1);
-
-        fmt::print("Part 1 Solution: {}\n", distance(valid));
-    }
-
-    {
-        std::ifstream ifs{"days/day02/input.txt"};
-
-        auto valid = getlines(ifs) | views::transform(parse) | views::filter(selection2);
-
-        fmt::print("Part 2 Solution: {}\n", distance(valid));
-    }
+    fmt::print("Part 1 Solution: {}\n", part1(input));
+    fmt::print("Part 2 Solution: {}\n", part2(input));
 
     return 0;
 }
+
+#else
+
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
+#include <sstream>
+
+TEST_CASE("Can parse string into rule password pair", "[day02]")
+{
+    {
+        auto [policy, password] = parse_password_rule_string("1-3 a: abcde");
+
+        REQUIRE(password == "abcde");
+        REQUIRE(policy.min_count == 1);
+        REQUIRE(policy.max_count == 3);
+        REQUIRE(policy.target == 'a');
+    }
+
+    {
+        auto [policy, password] = parse_password_rule_string("1-3 b: cdefg");
+
+        REQUIRE(password == "cdefg");
+        REQUIRE(policy.min_count == 1);
+        REQUIRE(policy.max_count == 3);
+        REQUIRE(policy.target == 'b');
+    }
+
+    {
+        auto [policy, password] = parse_password_rule_string("2-9 c: ccccccccc");
+
+        REQUIRE(password == "ccccccccc");
+        REQUIRE(policy.min_count == 2);
+        REQUIRE(policy.max_count == 9);
+        REQUIRE(policy.target == 'c');
+    }
+}
+TEST_CASE("Can validate part 1 passwords", "[day02]")
+{
+    REQUIRE(is_valid_day2_part1_pw(parse_password_rule_string("1-3 a: abcde")));
+    REQUIRE_FALSE(is_valid_day2_part1_pw(parse_password_rule_string("1-3 b: cdefg")));
+    REQUIRE(is_valid_day2_part1_pw(parse_password_rule_string("2-9 c: ccccccccc")));
+}
+
+TEST_CASE("Can validate part 2 passwords", "[day02]")
+{
+    REQUIRE(is_valid_day2_part2_pw(parse_password_rule_string("1-3 a: abcde")));
+    REQUIRE_FALSE(is_valid_day2_part1_pw(parse_password_rule_string("1-3 b: cdefg")));
+    REQUIRE_FALSE(is_valid_day2_part2_pw(parse_password_rule_string("2-9 c: ccccccccc")));
+}
+
+TEST_CASE("Can solve day 2 problems")
+{
+    std::stringstream ss;
+
+    ss << R"(1-3 a: abcde
+1-3 b: cdefg
+2-9 c: ccccccccc)";
+
+    auto input = ranges::getlines(ss) | rv::transform(parse_password_rule_string)
+                 | ranges::to<std::vector>;
+
+    SECTION("Can solve part 1 example") { REQUIRE(2 == part1(input)); }
+
+    SECTION("Can solve part 2 example") { REQUIRE(1 == part2(input)); }
+}
+
+#endif
