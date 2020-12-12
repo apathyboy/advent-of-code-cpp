@@ -60,9 +60,8 @@ glm::ivec2 move_step(char heading, int amount)
 glm::ivec2 move_around(action step, glm::ivec2 current_pos)
 {
     for (int i = 0; i < step.amount / 90; ++i) {
-        glm::ivec2 sign = (step.type == 'L') ? glm::ivec2{-1, 1} : glm::ivec2{1, -1};
         std::swap(current_pos.x, current_pos.y);
-        current_pos *= sign;
+        current_pos *= (step.type == 'L') ? glm::ivec2{-1, 1} : glm::ivec2{1, -1};
     }
 
     return current_pos;
