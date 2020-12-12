@@ -18,8 +18,9 @@ target_link_libraries(
 
 target_compile_options(
     day09_tests
-    PRIVATE -wd4459
-            -wd6330)
+    PRIVATE $<$<CXX_COMPILER_ID:MSVC>:
+            -wd4459 # TODO range-v3 error
+            -wd6330>) # TODO catch2 error
 
 target_compile_definitions(day09_tests PRIVATE UNIT_TESTING)
 

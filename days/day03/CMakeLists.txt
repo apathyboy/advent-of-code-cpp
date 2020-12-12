@@ -14,7 +14,10 @@ target_link_libraries(
             fmt::fmt
             range-v3::meta)
 
-target_compile_options(day03_tests PRIVATE -wd6330) # TODO catch2 error
+target_compile_options(
+    day03_tests
+    PRIVATE $<$<CXX_COMPILER_ID:MSVC>:
+            -wd6330>) # TODO catch2 error
 
 target_compile_definitions(day03_tests PRIVATE UNIT_TESTING)
 
