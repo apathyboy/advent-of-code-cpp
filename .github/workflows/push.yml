@@ -1,12 +1,12 @@
 # Copyright (c) 2020 Luca Cappa
 # Released under the term specified in file LICENSE.txt
 # SPDX short identifier: MIT
-name: hosted-advanced-setup-vcpkg-with-manifest-autocache
+name: All Build
 on: [push]
 
 jobs:
   job:
-    name: ${{ matrix.os }}-hosted-advanced
+    name: ${{ matrix.os }}-build
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
