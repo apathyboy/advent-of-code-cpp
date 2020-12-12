@@ -1,40 +1,40 @@
 #include <fmt/core.h>
 
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 28278)
 #endif
 #include <range/v3/all.hpp>
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
 #include <bitset>
 #include <fstream>
 
+namespace rs = ranges;
 namespace rv = ranges::views;
 
 int calculate_seat_id(std::string_view pass)
 {
     auto to_bits = [](char c) {
-        if (c == 'F' || c == 'L')
-            return '0';
+        if (c == 'F' || c == 'L') return '0';
         else
             return '1';
     };
 
-    return std::bitset<10>(pass | rv::transform(to_bits) | ranges::to<std::string>).to_ulong();
+    return std::bitset<10>(pass | rv::transform(to_bits) | rs::to<std::string>).to_ulong();
 }
 
 int64_t part1(const std::vector<int>& input)
 {
-    return ranges::max(input);
+    return rs::max(input);
 }
 
 int64_t part2(const std::vector<int>& input)
 {
-    auto [min_id, max_id] = ranges::minmax(input);
-    auto sum              = ranges::accumulate(input, 0);
+    auto [min_id, max_id] = rs::minmax(input);
+    auto sum              = rs::accumulate(input, 0);
 
     return ((input.size() + 1) * (min_id + max_id) / 2) - sum;
 }
@@ -47,8 +47,7 @@ int main()
 
     std::ifstream ifs{"days/day05/puzzle.in"};
 
-    auto input = ranges::getlines(ifs) | rv::transform(calculate_seat_id)
-                 | ranges::to<std::vector<int>>;
+    auto input = rs::getlines(ifs) | rv::transform(calculate_seat_id) | rs::to<std::vector<int>>;
 
     fmt::print("Part 1 Solution: {}\n", part1(input));
     fmt::print("Part 2 Solution: {}\n", part2(input));

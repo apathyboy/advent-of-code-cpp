@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 
+namespace rs = ranges;
 namespace rv = ranges::views;
 
 class game_console {
@@ -50,13 +51,11 @@ public:
                 } break;
             }
 
-            if (next_instruction_ >= static_cast<int>(program_.size()))
-                break;
+            if (next_instruction_ >= static_cast<int>(program_.size())) break;
 
             inf_loop_detected_ = cache.contains(next_instruction_);
 
-            if (!inf_loop_detected_)
-                cache.emplace(next_instruction_);
+            if (!inf_loop_detected_) cache.emplace(next_instruction_);
         }
 
         return {accumulator_, inf_loop_detected_};
@@ -78,10 +77,10 @@ game_console::program read_input_program(std::istream&& i)
     ;
 
     // clang-format off
-    return ranges::getlines(i) 
+    return rs::getlines(i) 
         | rv::transform([&op_map](auto&& s) {
             return game_console::instruction{op_map.at(s.substr(0, 3)), std::stoi(s.substr(4))}; })
-        | ranges::to<std::vector>;
+        | rs::to<std::vector>;
     // clang-format on
 }
 
@@ -100,8 +99,7 @@ int part2(game_console::program p)
     int  accumulator = 0, check = 0;
 
     while (!found) {
-        while (p[check].op != game_console::OP_TYPE::NOP
-               && p[check].op != game_console::OP_TYPE::JMP)
+        while (p[check].op != game_console::OP_TYPE::NOP && p[check].op != game_console::OP_TYPE::JMP)
             ++check;
 
         // toggle check

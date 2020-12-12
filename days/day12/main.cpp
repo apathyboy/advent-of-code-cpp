@@ -38,8 +38,8 @@ int navigate(const std::vector<instruction>& input, glm::ivec2 heading, bool fol
         if (instr.dir == 'L' || instr.dir == 'R') {
             rs::for_each(rv::iota(0, instr.amount / 90), [&heading, &instr](auto) {
                 std::tie(heading.x, heading.y) = std::make_tuple(
-                    heading.y * ((instr.dir == 'L') ? -1 : 1),
-                    heading.x * ((instr.dir == 'R') ? -1 : 1));
+                    heading.y * ((instr.dir == 'R') ? 1 : -1),
+                    heading.x * ((instr.dir == 'L') ? 1 : -1));
             });
         }
         else if (instr.dir == 'F') {

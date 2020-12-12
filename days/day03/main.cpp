@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 
+namespace rs = ranges;
 namespace rv = ranges::views;
 
 auto slope_type1_hits(const std::vector<std::string>& input, int slope)
@@ -14,7 +15,7 @@ auto slope_type1_hits(const std::vector<std::string>& input, int slope)
         return (line[(depth * slope) % line.length()] == '#') ? 1 : 0;
     };
 
-    return ranges::accumulate(rv::enumerate(input) | rv::transform(hit_test), 0);
+    return rs::accumulate(rv::enumerate(input) | rv::transform(hit_test), 0);
 }
 
 auto slope_type2_hits(const std::vector<std::string>& input)
@@ -24,7 +25,7 @@ auto slope_type2_hits(const std::vector<std::string>& input)
         return (depth % 2 == 0 && line[(depth / 2) % line.length()] == '#') ? 1 : 0;
     };
 
-    return ranges::accumulate(rv::enumerate(input) | rv::transform(hit_test), 0);
+    return rs::accumulate(rv::enumerate(input) | rv::transform(hit_test), 0);
 }
 
 int part1(const std::vector<std::string>& input)
@@ -46,7 +47,7 @@ int main()
 
     std::ifstream ifs{"days/day03/puzzle.in"};
 
-    auto input = ranges::getlines(ifs) | ranges::to<std::vector>;
+    auto input = rs::getlines(ifs) | rs::to<std::vector>;
 
     fmt::print("Part 1 Solution: {}\n", part1(input));
     fmt::print("Part 2 Solution: {}\n", part2(input));
@@ -76,7 +77,7 @@ TEST_CASE("Can solve day 3 problems")
 #...##....#
 .#..#...#.#)";
 
-    auto input = ranges::getlines(ss) | ranges::to<std::vector>;
+    auto input = rs::getlines(ss) | rs::to<std::vector>;
 
     SECTION("Can solve part 1 example") { REQUIRE(7 == part1(input)); }
 

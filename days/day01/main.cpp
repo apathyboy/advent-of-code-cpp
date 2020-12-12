@@ -1,19 +1,22 @@
+#include <aoc2020/aoc2020.hpp>
+
 #include <fmt/core.h>
 #include <range/v3/all.hpp>
 
 #include <array>
 #include <fstream>
 
+namespace rs = ranges;
 namespace rv = ranges::views;
 
 auto contains_last_element(const std::vector<int>& input)
 {
-    return [&input](const auto& p) { return ranges::contains(input, p.back()); };
+    return [&input](const auto& p) { return rs::contains(input, p.back()); };
 }
 
 auto accumulate_multiply()
 {
-    return [](auto&& p) { return ranges::accumulate(p, 1, std::multiplies<>()); };
+    return [](auto&& p) { return rs::accumulate(p, 1, std::multiplies<>()); };
 }
 
 int part1(const std::vector<int>& input)
@@ -25,7 +28,7 @@ int part1(const std::vector<int>& input)
         | rv::transform(accumulate_multiply());
     // clang-format on
 
-    return ranges::front(result);
+    return rs::front(result);
 }
 
 int part2(const std::vector<int>& input)
@@ -39,7 +42,7 @@ int part2(const std::vector<int>& input)
         | rv::transform(accumulate_multiply());
     // clang-format on
 
-    return ranges::front(result);
+    return rs::front(result);
 }
 
 #ifndef UNIT_TESTING
@@ -48,13 +51,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 01\n");
 
-    std::ifstream ifs{"days/day01/puzzle.in"};
-
-    // clang-format off
-    auto input = ranges::getlines(ifs) 
-        | rv::transform([](auto&& s) { return std::stoi(s); })
-        | ranges::to<std::vector>;
-    // clang-format on
+    auto input = aoc::read_int_per_line(std::ifstream{"days/day01/puzzle.in"});
 
     fmt::print("Part 1 Solution: {}\n", part1(input));
     fmt::print("Part 2 Solution: {}\n", part2(input));
@@ -80,9 +77,7 @@ TEST_CASE("Can solve day 2 problems")
 1456)";
 
     // clang-format off
-    auto input = ranges::getlines(ss) 
-        | rv::transform([](auto&& s) { return std::stoi(s); })
-        | ranges::to<std::vector>;
+    auto input = aoc::read_int_per_line(std::move(ss));
     // clang-format on
 
     SECTION("Can solve part 1 example") { REQUIRE(514579 == part1(input)); }

@@ -4,20 +4,19 @@
 #include <fstream>
 #include <string>
 
-using namespace ranges;
+namespace rs = ranges;
+namespace rv = ranges::views;
 
 struct field_t {
     std::string tag;
     std::string data;
 };
 
-auto combine_chars        = [](auto const& rc) { return rc | to<std::string>; };
+auto combine_chars        = [](auto const& rc) { return rc | rs::to<std::string>; };
 auto to_passport_field    = [](const auto& s) { return field_t{s.substr(0, 3), s.substr(4)}; };
 auto is_valid_part1_field = [](const field_t& f) { return f.tag != "cid"; };
 auto is_valid_part2_field = [](const field_t& f) {
-    if (f.tag == "cid") {
-        return false;
-    }
+    if (f.tag == "cid") { return false; }
     else if (f.tag == "byr") {
         int d = std::stoi(f.data);
         return d >= 1920 && d <= 2002;
@@ -33,22 +32,18 @@ auto is_valid_part2_field = [](const field_t& f) {
     else if (f.tag == "hgt") {
 
         std::string unit = f.data.substr(f.data.length() - 2);
-        if (unit != "in" && unit != "cm")
-            return false;
+        if (unit != "in" && unit != "cm") return false;
 
         int h = std::stoi(f.data.substr(0, f.data.length() - 2));
         return (unit == "cm" && h >= 150 && h <= 193) || (unit == "in" && h >= 59 && h <= 76);
     }
     else if (f.tag == "hcl") {
-        if (f.data.length() != 7)
-            return false;
+        if (f.data.length() != 7) return false;
 
-        if (f.data[0] != '#')
-            return false;
+        if (f.data[0] != '#') return false;
 
         for (auto c : f.data.substr(1)) {
-            if (!(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'f'))
-                return false;
+            if (!(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'f')) return false;
         }
     }
     else if (f.tag == "ecl") {
@@ -56,12 +51,10 @@ auto is_valid_part2_field = [](const field_t& f) {
                || f.data == "grn" || f.data == "hzl" || f.data == "oth";
     }
     else if (f.tag == "pid") {
-        if (f.data.length() != 9)
-            return false;
+        if (f.data.length() != 9) return false;
 
         for (auto c : f.data) {
-            if (c < '0' || c > '9')
-                return false;
+            if (c < '0' || c > '9') return false;
         }
     }
 
@@ -76,18 +69,17 @@ int part1(const std::vector<std::string>& lines)
 
     for (const auto& str : lines) {
         if (str.length() == 0) {
-            if (fields == 7)
-                ++passports;
+            if (fields == 7) ++passports;
 
             fields = 0;
         }
         else {
             // clang-format off
-            fields += distance(str 
-                | views::split(' ') 
-                | views::transform(combine_chars)
-                | views::transform(to_passport_field)
-                | views::filter(is_valid_part1_field));
+            fields += rs::distance(str 
+                | rv::split(' ') 
+                | rv::transform(combine_chars)
+                | rv::transform(to_passport_field)
+                | rv::filter(is_valid_part1_field));
             // clang-format on
         }
     }
@@ -102,18 +94,17 @@ int part2(const std::vector<std::string>& lines)
 
     for (const auto& str : lines) {
         if (str.length() == 0) {
-            if (fields == 7)
-                ++passports;
+            if (fields == 7) ++passports;
 
             fields = 0;
         }
         else {
             // clang-format off
-            fields += distance(str 
-                | views::split(' ') 
-                | views::transform(combine_chars)
-                | views::transform(to_passport_field)
-                | views::filter(is_valid_part2_field));
+            fields += rs::distance(str 
+                | rv::split(' ') 
+                | rv::transform(combine_chars)
+                | rv::transform(to_passport_field)
+                | rv::filter(is_valid_part2_field));
             // clang-format on
         }
     }

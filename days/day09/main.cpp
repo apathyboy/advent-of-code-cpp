@@ -6,14 +6,15 @@
 #include <fstream>
 #include <optional>
 
+namespace rs = ranges;
 namespace rv = ranges::views;
 
 std::vector<int64_t> read_input(std::istream&& i)
 {
     // clang-format off
-    return ranges::getlines(i) 
+    return rs::getlines(i) 
         | rv::transform([](auto&& s) ->int64_t { return std::stoll(s); })
-        | ranges::to<std::vector>;
+        | rs::to<std::vector>;
     // clang-format on
 }
 
@@ -23,18 +24,18 @@ int64_t part1(const std::vector<int64_t>& input, int window_size)
     auto rng = input 
         | rv::sliding(window_size + 1) 
         | rv::filter([](const auto& rng) {
-            int64_t target = ranges::back(rng);
+            int64_t target = rs::back(rng);
 
-            return ranges::distance(rng 
+            return rs::distance(rng 
                 | rv::drop_last(1)
                 | rv::transform([target](auto i) { return target - i; })
                 | rv::unique
-                | rv::filter([&rng](const auto& p) { return ranges::contains(rng, p); })) == 0; })
-        | rv::transform([](const auto& rng) { return ranges::back(rng); })
+                | rv::filter([&rng](const auto& p) { return rs::contains(rng, p); })) == 0; })
+        | rv::transform([](const auto& rng) { return rs::back(rng); })
         | rv::take(1);
     // clang-format on
 
-    return ranges::front(rng);
+    return rs::front(rng);
 }
 
 int64_t part2(const std::vector<int64_t>& input, int64_t target)
@@ -45,15 +46,13 @@ int64_t part2(const std::vector<int64_t>& input, int64_t target)
         // clang-format off
         auto rng = input 
             | rv::sliding(window_size++) 
-            | rv::filter([target](const auto& rng) { return ranges::accumulate(rng, int64_t{0}) == target; })
+            | rv::filter([target](const auto& rng) { return rs::accumulate(rng, int64_t{0}) == target; })
             | rv::transform([](auto&& rng) {
-                auto [min, max] = ranges::minmax_element(rng);
+                auto [min, max] = rs::minmax_element(rng);
                 return *min + *max; });
         // clang-format on
 
-        if (ranges::distance(rng) > 0) {
-            result = ranges::front(rng);
-        }
+        if (rs::distance(rng) > 0) { result = rs::front(rng); }
     }
 
     return result.value();
@@ -115,10 +114,7 @@ TEST_CASE("Can solve day 9 problems")
 
     SECTION("Can solve part 1 example") { REQUIRE(127 == part1(input, window_size)); }
 
-    SECTION("Can solve part 2 example")
-    {
-        REQUIRE(62 == part2(input, part1(input, window_size)));
-    }
+    SECTION("Can solve part 2 example") { REQUIRE(62 == part2(input, part1(input, window_size))); }
 }
 
 #endif

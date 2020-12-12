@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 
+namespace rs = ranges;
 namespace rv = ranges::views;
 
 struct corporate_policy {
@@ -37,7 +38,7 @@ std::pair<corporate_policy, std::string> parse_password_rule_string(const std::s
 
 bool is_valid_day2_part1_pw(const std::pair<corporate_policy, std::string>& pw)
 {
-    auto c = ranges::count(pw.second, pw.first.target);
+    auto c = rs::count(pw.second, pw.first.target);
     return (c >= pw.first.min_count && c <= pw.first.max_count);
 }
 
@@ -48,18 +49,17 @@ bool is_valid_day2_part2_pw(const std::pair<corporate_policy, std::string>& pw)
     int         pos2   = pw.first.max_count - 1;
     char        target = pw.first.target;
 
-    return (str[pos1] == target && str[pos2] != target)
-           || (str[pos1] != target && str[pos2] == target);
+    return (str[pos1] == target && str[pos2] != target) || (str[pos1] != target && str[pos2] == target);
 }
 
 int64_t part1(const password_vec& input)
 {
-    return ranges::distance(input | rv::filter(is_valid_day2_part1_pw));
+    return rs::distance(input | rv::filter(is_valid_day2_part1_pw));
 }
 
 int64_t part2(const password_vec& input)
 {
-    return ranges::distance(input | rv::filter(is_valid_day2_part2_pw));
+    return rs::distance(input | rv::filter(is_valid_day2_part2_pw));
 }
 
 #ifndef UNIT_TESTING
@@ -70,8 +70,7 @@ int main()
 
     std::ifstream ifs{"days/day02/puzzle.in"};
 
-    auto input = ranges::getlines(ifs) | rv::transform(parse_password_rule_string)
-                 | ranges::to<std::vector>;
+    auto input = rs::getlines(ifs) | rv::transform(parse_password_rule_string) | rs::to<std::vector>;
 
     fmt::print("Part 1 Solution: {}\n", part1(input));
     fmt::print("Part 2 Solution: {}\n", part2(input));
@@ -136,8 +135,7 @@ TEST_CASE("Can solve day 2 problems")
 1-3 b: cdefg
 2-9 c: ccccccccc)";
 
-    auto input = ranges::getlines(ss) | rv::transform(parse_password_rule_string)
-                 | ranges::to<std::vector>;
+    auto input = rs::getlines(ss) | rv::transform(parse_password_rule_string) | rs::to<std::vector>;
 
     SECTION("Can solve part 1 example") { REQUIRE(2 == part1(input)); }
 

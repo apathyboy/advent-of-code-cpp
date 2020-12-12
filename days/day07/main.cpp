@@ -10,8 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-
-using namespace ranges;
+namespace rs = ranges;
 namespace rv = ranges::views;
 
 const auto search_regex   = std::regex(R"((.*) bags contain (.*))");
@@ -27,24 +26,18 @@ struct node {
     std::vector<contained> children;
 };
 
-bool can_contain_type(
-    const std::vector<node>& nodes,
-    const node&              check,
-    const std::string&       search_type)
+bool can_contain_type(const std::vector<node>& nodes, const node& check, const std::string& search_type)
 {
-    if (find_if(
-            check.children,
-            [&search_type](const auto& c) { return c.name == search_type; })
-        != end(check.children)) {
+    if (rs::find_if(check.children, [&search_type](const auto& c) { return c.name == search_type; })
+        != rs::end(check.children)) {
         return true;
     }
 
     for (const auto& child : check.children) {
-        auto iter = find_if(nodes, [&child](const auto& n) { return n.name == child.name; });
+        auto iter = rs::find_if(nodes, [&child](const auto& n) { return n.name == child.name; });
 
-        if (iter != end(nodes)) {
-            if (can_contain_type(nodes, *iter, search_type))
-                return true;
+        if (iter != rs::end(nodes)) {
+            if (can_contain_type(nodes, *iter, search_type)) return true;
         }
     }
 
@@ -57,11 +50,9 @@ int count_children(const std::vector<node>& nodes, const node& check, int times)
     for (const auto& child : check.children) {
         sum += (child.count * times);
 
-        auto iter = find_if(nodes, [&child](const auto& n) { return n.name == child.name; });
+        auto iter = rs::find_if(nodes, [&child](const auto& n) { return n.name == child.name; });
 
-        if (iter != end(nodes)) {
-            sum += count_children(nodes, *iter, times * child.count);
-        }
+        if (iter != rs::end(nodes)) { sum += count_children(nodes, *iter, times * child.count); }
     }
 
     return sum;
@@ -69,39 +60,44 @@ int count_children(const std::vector<node>& nodes, const node& check, int times)
 
 std::vector<node> parse_input(std::istream&& is)
 {
-    return getlines(is) | views::transform([](auto&& s) {
-               std::smatch         m, m2;
-               std::optional<node> n;
+    // clang-format off
+    return rs::getlines(is) 
+        | rv::transform([](auto&& s) {
+            std::smatch         m, m2;
+            std::optional<node> n;
 
-               if (std::regex_match(s, m, search_regex)) {
-                   n = node{m.str(1), {}};
+            if (std::regex_match(s, m, search_regex)) {
+                n = node{m.str(1), {}};
 
-                   for (auto tmp = m.str(2); std::regex_search(tmp, m2, contents_regex);) {
-                       n->children.push_back({m2.str(2), std::stoi(m2.str(1))});
-                       tmp = m2.suffix();
-                   }
-               }
+                for (auto tmp = m.str(2); std::regex_search(tmp, m2, contents_regex);) {
+                    n->children.push_back({m2.str(2), std::stoi(m2.str(1))});
+                    tmp = m2.suffix();
+                }
+            }
 
-               return n.value();
-           })
-           | to<std::vector>;
+            return n.value(); })
+        | rs::to<std::vector>;
+    // clang-format on
 }
 
-int part1(const std::vector<node>& input, const std::string& bag_type)
+int64_t part1(const std::vector<node>& input, const std::string& bag_type)
 {
-    auto nodes = input | views::filter([&input, &bag_type](const auto& n) {
-                     return n.name != bag_type && can_contain_type(input, n, bag_type);
-                 })
-                 | views::transform([](auto&& n) { return n.name; }) | views::unique;
-    return static_cast<int>(distance(nodes));
+    // clang-format off
+    auto nodes = input
+        | rv::filter([&input, &bag_type](const auto& n) {
+            return n.name != bag_type && can_contain_type(input, n, bag_type); })
+        | rv::transform([](auto&& n) { return n.name; })
+        | rv::unique;
+    // clang-format on
+
+    return rs::distance(nodes);
 }
 
 int part2(const std::vector<node>& input, const std::string& bag_type)
 {
-    auto wanted = input
-                  | views::filter([&bag_type](const auto& n) { return n.name == bag_type; });
+    auto wanted = input | rv::filter([&bag_type](const auto& n) { return n.name == bag_type; });
 
-    return count_children(input, front(wanted), 1);
+    return count_children(input, rs::front(wanted), 1);
 }
 
 #ifndef UNIT_TESTING

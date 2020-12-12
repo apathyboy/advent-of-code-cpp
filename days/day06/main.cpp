@@ -7,8 +7,18 @@
 #include <set>
 #include <string>
 
+namespace rs = ranges;
 namespace ra = ranges::actions;
 namespace rv = ranges::views;
+
+std::vector<std::string> parse_input(std::istream&& input)
+{
+    // clang-format off
+    return rs::getlines(input) 
+        | rv::transform([](auto && s) { rs::sort(s); return s; })
+        | ranges::to<std::vector>;
+    // clang-format on
+}
 
 int64_t part1(const std::vector<std::string>& input)
 {
@@ -16,10 +26,10 @@ int64_t part1(const std::vector<std::string>& input)
     auto rng = input 
         | rv::split("") 
         | rv::transform([](auto&& rng) { 
-            return ranges::distance(rng | rv::join | ranges::to<std::vector> | ra::sort | ra::unique); });
+            return rs::distance(rng | rv::join | rs::to<std::vector> | ra::sort | ra::unique); });
     // clang-format on
 
-    return ranges::accumulate(rng, int64_t{0});
+    return rs::accumulate(rng, int64_t{0});
 }
 
 int64_t part2(const std::vector<std::string>& input)
@@ -28,16 +38,16 @@ int64_t part2(const std::vector<std::string>& input)
     auto rng = input 
         | rv::split("") 
         | rv::transform([](auto&& rng) {
-            auto first = ranges::front(rng)| ranges::to<std::vector>;
+            auto first = rs::front(rng) | rs::to<std::vector>;
 
             for (auto s : rv::tail(rng)) {
-                first = rv::set_intersection(first, s) | ranges::to<std::vector>;
+                first = rv::set_intersection(first, s) | rs::to<std::vector>;
             }
 
-            return ranges::distance(first); });
+            return rs::distance(first); });
     // clang-format on
 
-    return ranges::accumulate(rng, int64_t{0});
+    return rs::accumulate(rng, int64_t{0});
 }
 
 #ifndef UNIT_TESTING
@@ -46,14 +56,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 06\n");
 
-
-    std::ifstream ifs{"days/day06/puzzle.in"};
-
-    auto input = ranges::getlines(ifs) | rv::transform([](auto&& s) {
-                     ranges::sort(s);
-                     return s;
-                 })
-                 | ranges::to<std::vector>;
+    auto input = parse_input(std::ifstream{"days/day06/puzzle.in"});
 
     fmt::print("Part 1 Solution: {}\n", part1(input));
     fmt::print("Part 2 Solution: {}\n", part2(input));
@@ -87,7 +90,7 @@ a
 
 b)";
 
-    auto input = ranges::getlines(ss) | ranges::to<std::vector>;
+    auto input = parse_input(std::move(ss));
 
     SECTION("Can solve part 1 example") { REQUIRE(11 == part1(input)); }
 
