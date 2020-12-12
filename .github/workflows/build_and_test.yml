@@ -1,7 +1,7 @@
 # Copyright (c) 2020 Luca Cappa
 # Released under the term specified in file LICENSE.txt
 # SPDX short identifier: MIT
-name: All Build
+name: All Builds and Tests
 on: [push]
 
 jobs:
@@ -57,3 +57,6 @@ jobs:
           buildDirectory: '${{ runner.workspace }}/build'
           cmakeAppendedArgs: '"-GNinja Multi-Config" -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet}} '
           buildWithCMake: true
+      
+      - name: Run CTest
+        run: cd build && ctest
