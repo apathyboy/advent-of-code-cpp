@@ -18,32 +18,27 @@ struct action {
 
 std::vector<action> read_input(std::istream&& input)
 {
-    return ranges::getlines(input) | rv::transform([](auto&& s) {
-               return action{s[0], std::stoi(s.substr(1))};
-           })
-           | ranges::to<std::vector>;
+    // clang-format off
+    return ranges::getlines(input) 
+        | rv::transform([](auto&& s) { return action{s[0], std::stoi(s.substr(1))}; })
+        | ranges::to<std::vector>;
+    // clang-format on
 }
 
 char turn(action step, char current_heading)
 {
     auto dirs = std::array{'N', 'W', 'S', 'E'};
 
-    if (step.type == 'R') {
-        dirs = std::array{'N', 'E', 'S', 'W'};
-    }
+    auto start      = ranges::distance(dirs.begin(), ranges::find(dirs, current_heading));
+    auto turn_steps = (step.amount / 90) * (step.type == 'L' ? 1 : -1);
 
-    auto start = ranges::distance(dirs.begin(), ranges::find(dirs, current_heading));
-
-    auto turn_steps = step.amount / 90;
-
-    auto rng = dirs | rv::cycle | rv::slice(start, start + turn_steps + 1);
-
-    return ranges::back(rng);
+    return dirs[(start + turn_steps) % dirs.size()];
 }
 
 glm::ivec2 move_step(char heading, int amount)
 {
     glm::ivec2 move = {0, 0};
+
     switch (heading) {
         case 'N': {
             move += glm::ivec2{0, amount};
@@ -66,9 +61,7 @@ glm::ivec2 move_around(action step, glm::ivec2 current_pos)
 {
     for (int i = 0; i < step.amount / 90; ++i) {
         glm::ivec2 sign = (step.type == 'L') ? glm::ivec2{-1, 1} : glm::ivec2{1, -1};
-
         std::swap(current_pos.x, current_pos.y);
-
         current_pos *= sign;
     }
 
