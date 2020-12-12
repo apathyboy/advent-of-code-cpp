@@ -31,6 +31,14 @@ jobs:
 
       - uses: lukka/get-cmake@latest
     
+          
+      - name: Setup clang-10
+        if: startsWith(matrix.name, 'ubuntu')
+        - run:   |
+                 sudo apt update
+                 sudo apt install clang-10 clang++-10
+          shell: bash
+
       - name: Set Compiler Environment
         uses: lukka/set-shell-env@v1
         with:
