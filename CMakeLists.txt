@@ -13,6 +13,11 @@ find_package(
     REQUIRED)
 
 find_package(
+    glm
+    CONFIG
+    REQUIRED)
+
+find_package(
     range-v3
     CONFIG
     REQUIRED)

@@ -10,6 +10,7 @@ target_link_libraries(
     day12
     PRIVATE aoc2020
             fmt::fmt
+            glm
             range-v3::meta)
 
 add_executable(day12_tests main.cpp)
@@ -18,6 +19,7 @@ target_link_libraries(
     day12_tests
     PRIVATE aoc2020
             fmt::fmt
+            glm
             range-v3::meta)
 
 target_compile_options(
