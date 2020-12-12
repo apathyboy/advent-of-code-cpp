@@ -16,12 +16,18 @@ jobs:
           - os: windows-latest
             triplet: x64-windows
             vcpkgCommitId: '7f328aa3901bff3c3d12cd41e35f43543667d42e'
+            cxx: cl.exe
+            cc: cl.exe
           - os: ubuntu-latest
             triplet: x64-linux
             vcpkgCommitId: '7f328aa3901bff3c3d12cd41e35f43543667d42e'
+            cxx: clang++
+            cc: clang
           - os: macos-latest
             triplet: x64-osx
             vcpkgCommitId: '7f328aa3901bff3c3d12cd41e35f43543667d42e'
+            cxx: clang++
+            cc: clang
 
     steps:
       - uses: actions/checkout@v1
@@ -29,6 +35,12 @@ jobs:
           submodules: true
 
       - uses: lukka/get-cmake@latest
+    
+      - name: Set Compiler Environment
+        uses: lukka/set-shell-env@v1
+        with:
+          CXX: ${{ matrix.cxx }}
+          CC: ${{ matrix.cc }}
 
       - name: Restore artifacts, or setup vcpkg (do not install any package)
         uses: lukka/run-vcpkg@v6
