@@ -35,9 +35,18 @@ jobs:
     - name: Set Windows ENV
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+ 
+    - name: Install vcpkg
+      uses: lukka/run-vcpkg@v2
+      with:
+        vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+        vcpkgArguments: '@${{ github.workspace }}/vcpkg.txt'
+        appendedCacheKey: ${{ hashFiles(env.vcpkgResponseFile) }}
 
     - name: CMake Configure 
-      run: cmake -Bbuild -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }}
+      run: cmake -Bbuild -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
     - name: CMake Build
       run: cmake --build build
