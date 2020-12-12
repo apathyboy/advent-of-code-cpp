@@ -41,10 +41,7 @@ target_compile_features(aoc2020 PUBLIC cxx_std_20)
 
 target_compile_options(
     aoc2020
-    PUBLIC $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:-Wall
-           -Wextra
-           -Werror>
-           $<$<CXX_COMPILER_ID:MSVC>:-W4
+    PUBLIC $<$<CXX_COMPILER_ID:MSVC>:-W4
            -WX
            -analyze>)
 
