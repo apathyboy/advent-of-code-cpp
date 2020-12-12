@@ -59,4 +59,4 @@ jobs:
           buildWithCMake: true
       
       - name: Run CTest
-        run: cd build && ctest
+        run: 'cd ${{ runner.workspace }}/build && ctest'
