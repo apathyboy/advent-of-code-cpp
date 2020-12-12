@@ -15,13 +15,13 @@ jobs:
         include:
           - os: windows-latest
             triplet: x64-windows
-            vcpkgCommitId: '6c9cda1635859571de5c964bbacdece824045305'
+            vcpkgCommitId: '7f328aa3901bff3c3d12cd41e35f43543667d42e'
           - os: ubuntu-latest
             triplet: x64-linux
-            vcpkgCommitId: '6c9cda1635859571de5c964bbacdece824045305'
+            vcpkgCommitId: '7f328aa3901bff3c3d12cd41e35f43543667d42e'
           - os: macos-latest
             triplet: x64-osx
-            vcpkgCommitId: '6c9cda1635859571de5c964bbacdece824045305'
+            vcpkgCommitId: '7f328aa3901bff3c3d12cd41e35f43543667d42e'
 
     steps:
       - uses: actions/checkout@v1
@@ -29,24 +29,21 @@ jobs:
           submodules: true
 
       - uses: lukka/get-cmake@latest
-      - name: dir
-        run: find $RUNNER_TEMP
-        shell: bash
-      - name: dir
-        run: find $RUNNER_WORKSPACE
-        shell: bash
+
       - name: Restore artifacts, or setup vcpkg (do not install any package)
         uses: lukka/run-vcpkg@v6
         id: runvcpkg
         with:
           setupOnly: true
-          vcpkgDirectory: '${{ runner.workspace }}/b/vcpkg'
+          vcpkgDirectory: '${{ runner.workspace }}/build/vcpkg'
           vcpkgGitCommitId: '${{ matrix.vcpkgCommitId}}'
           # Ensure the cache key changes any time the content of the manifest file changes.
-          appendedCacheKey: ${{ hashFiles( '**/vcpkg_manifest/vcpkg.json' ) }}
+          appendedCacheKey: ${{ hashFiles( '**/vcpkg.json' ) }}
           vcpkgTriplet: ${{ matrix.triplet }}
+      
       - name: Prints output of run-vcpkg's action
         run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_TRIPLET_OUT }}'"
+
       - name: Run CMake with vcpkg.json manifest
         uses: lukka/run-cmake@v3
         with:
