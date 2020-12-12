@@ -1,9 +1,13 @@
 #include <fmt/core.h>
 
+#ifdef _MSC_VER 
 #pragma warning(push)
 #pragma warning(disable : 28278)
+#endif
 #include <range/v3/all.hpp>
+#ifdef _MSC_VER 
 #pragma warning(pop)
+#endif
 
 #include <bitset>
 #include <fstream>

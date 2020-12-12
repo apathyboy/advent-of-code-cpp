@@ -50,7 +50,7 @@ public:
                 } break;
             }
 
-            if (next_instruction_ >= program_.size())
+            if (next_instruction_ >= static_cast<int>(program_.size()))
                 break;
 
             inf_loop_detected_ = cache.contains(next_instruction_);

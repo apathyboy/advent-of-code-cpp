@@ -34,7 +34,7 @@ bool can_contain_type(
 {
     if (find_if(
             check.children,
-            [&search_type, &check](const auto& c) { return c.name == search_type; })
+            [&search_type](const auto& c) { return c.name == search_type; })
         != end(check.children)) {
         return true;
     }
@@ -74,7 +74,7 @@ std::vector<node> parse_input(std::istream&& is)
                std::optional<node> n;
 
                if (std::regex_match(s, m, search_regex)) {
-                   n = node{m.str(1)};
+                   n = node{m.str(1), {}};
 
                    for (auto tmp = m.str(2); std::regex_search(tmp, m2, contents_regex);) {
                        n->children.push_back({m2.str(2), std::stoi(m2.str(1))});

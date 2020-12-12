@@ -1,9 +1,13 @@
 #include <fmt/core.h>
 
+#ifdef _MSC_VER 
 #pragma warning(push)
 #pragma warning(disable : 28278)
+#endif
 #include <range/v3/all.hpp>
+#ifdef _MSC_VER 
 #pragma warning(pop)
+#endif
 
 #include <fstream>
 #include <sstream>
@@ -33,7 +37,7 @@ std::pair<corporate_policy, std::string> parse_password_rule_string(const std::s
 
 bool is_valid_day2_part1_pw(const std::pair<corporate_policy, std::string>& pw)
 {
-    auto c = std::ranges::count(pw.second, pw.first.target);
+    auto c = ranges::count(pw.second, pw.first.target);
     return (c >= pw.first.min_count && c <= pw.first.max_count);
 }
 

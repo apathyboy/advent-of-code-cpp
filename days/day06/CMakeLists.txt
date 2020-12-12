@@ -6,7 +6,10 @@ target_link_libraries(
             fmt::fmt
             range-v3::meta)
 
-target_compile_options(day06 PRIVATE -wd4459)
+target_compile_options(
+    day06
+    PRIVATE $<$<CXX_COMPILER_ID:MSVC>:
+            -wd4459>) # TODO range-v3 error
 
 add_executable(day06_tests main.cpp)
 

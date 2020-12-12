@@ -12,7 +12,7 @@ std::vector<int64_t> read_input(std::istream&& i)
 {
     // clang-format off
     return ranges::getlines(i) 
-        | rv::transform([](auto&& s) { return std::stoll(s); })
+        | rv::transform([](auto&& s) ->int64_t { return std::stoll(s); })
         | ranges::to<std::vector>;
     // clang-format on
 }
@@ -41,7 +41,7 @@ int64_t part2(const std::vector<int64_t>& input, int64_t target)
 {
     std::optional<int64_t> result;
 
-    for (int window_size = 2; window_size < input.size() && !result;) {
+    for (uint32_t window_size = 2; window_size < input.size() && !result;) {
         // clang-format off
         auto rng = input 
             | rv::sliding(window_size++) 

@@ -1,6 +1,9 @@
 add_executable(day09 main.cpp)
 
-target_compile_options(day09 PRIVATE -wd4459)
+target_compile_options(
+    day09
+    PRIVATE $<$<CXX_COMPILER_ID:MSVC>:
+            -wd4459>) # TODO range-v3 error
 
 target_link_libraries(
     day09
