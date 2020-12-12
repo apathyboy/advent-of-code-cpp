@@ -11,14 +11,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-latest]
+        os: ["ubuntu-20.04", windows-latest]
         include:
           - os: windows-latest
             triplet: x64-windows
             vcpkgCommitId: '7f328aa3901bff3c3d12cd41e35f43543667d42e'
             cxx: cl.exe
             cc: cl.exe
-          - os: ubuntu-20.04
+          - os: "ubuntu-20.04"
             triplet: x64-linux
             vcpkgCommitId: '7f328aa3901bff3c3d12cd41e35f43543667d42e'
             cxx: clang++
@@ -30,13 +30,6 @@ jobs:
           submodules: true
 
       - uses: lukka/get-cmake@latest
-              
-      - name: Setup clang-10
-        if: startsWith(matrix.name, 'ubuntu')
-        - run:   |
-                 sudo apt update
-                 sudo apt install clang-10 clang++-10
-          shell: bash
 
       - name: Set Compiler Environment
         uses: lukka/set-shell-env@v1
