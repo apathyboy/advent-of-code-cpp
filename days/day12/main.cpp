@@ -2,14 +2,11 @@
 #include <glm/vec2.hpp>
 #include <range/v3/all.hpp>
 
-#include <array>
 #include <cmath>
 #include <fstream>
-#include <iostream>
 #include <map>
 #include <vector>
 
-namespace ra = ranges::actions;
 namespace rv = ranges::views;
 
 struct instruction {
