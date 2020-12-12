@@ -3,6 +3,7 @@
 #include <range/v3/all.hpp>
 
 #include <array>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -12,15 +13,15 @@ namespace rv = ranges::views;
 
 struct action {
     char type;
-    int amount;
+    int  amount;
 };
 
 std::vector<action> read_input(std::istream&& input)
 {
-    return ranges::getlines(input) | rv::transform([](auto && s) {
-        return action{s[0], std::stoi(s.substr(1))};
-    })
-    | ranges::to<std::vector>;
+    return ranges::getlines(input) | rv::transform([](auto&& s) {
+               return action{s[0], std::stoi(s.substr(1))};
+           })
+           | ranges::to<std::vector>;
 }
 
 char turn(action step, char current_heading)
@@ -44,21 +45,34 @@ glm::ivec2 move_step(char heading, int amount)
 {
     glm::ivec2 move = {0, 0};
     switch (heading) {
-            case 'N': {
-                move += glm::ivec2{0, amount};
-            } break;
-            case 'S': {
-                move += glm::ivec2{0, -amount};
-            } break;
-            case 'E': {
-                move += glm::ivec2{amount, 0};
-            } break;
-            case 'W': {
-                move += glm::ivec2{-amount, 0};
-            } break;    
+        case 'N': {
+            move += glm::ivec2{0, amount};
+        } break;
+        case 'S': {
+            move += glm::ivec2{0, -amount};
+        } break;
+        case 'E': {
+            move += glm::ivec2{amount, 0};
+        } break;
+        case 'W': {
+            move += glm::ivec2{-amount, 0};
+        } break;
     }
 
     return move;
+}
+
+glm::ivec2 move_around(action step, glm::ivec2 current_pos)
+{
+    for (int i = 0; i < step.amount / 90; ++i) {
+        glm::ivec2 sign = (step.type == 'L') ? glm::ivec2{-1, 1} : glm::ivec2{1, -1};
+
+        std::swap(current_pos.x, current_pos.y);
+
+        current_pos *= sign;
+    }
+
+    return current_pos;
 }
 
 int64_t part1(const std::vector<action>& input)
@@ -88,9 +102,30 @@ int64_t part1(const std::vector<action>& input)
     return std::abs(pos.x) + std::abs(pos.y);
 }
 
-int64_t part2()
+int64_t part2(const std::vector<action>& input)
 {
-    return 0;
+    glm::ivec2 waypoint_pos = {10, 1};
+    glm::ivec2 ship_pos     = {0, 0};
+
+    for (const auto& step : input) {
+        switch (step.type) {
+            case 'N':
+            case 'S':
+            case 'E':
+            case 'W': {
+                waypoint_pos += move_step(step.type, step.amount);
+            } break;
+            case 'L':
+            case 'R': {
+                waypoint_pos = move_around(step, waypoint_pos);
+            } break;
+            case 'F': {
+                ship_pos += waypoint_pos * step.amount;
+            } break;
+        }
+    }
+
+    return std::abs(ship_pos.x) + std::abs(ship_pos.y);
 }
 
 #ifndef UNIT_TESTING
@@ -102,7 +137,7 @@ int main()
     auto input = read_input(std::ifstream{"days/day12/puzzle.in"});
 
     fmt::print("Part 1 Solution: {}\n", part1(input));
-    fmt::print("Part 2 Solution: {}\n", part2());
+    fmt::print("Part 2 Solution: {}\n", part2(input));
 
     return 0;
 }
@@ -146,7 +181,7 @@ F11)";
 
     SECTION("Can solve part 1 example") { REQUIRE(25 == part1(input)); }
 
-    SECTION("Can solve part 2 example") { REQUIRE(0 == part2()); }
+    SECTION("Can solve part 2 example") { REQUIRE(286 == part2(input)); }
 }
 
 #endif
