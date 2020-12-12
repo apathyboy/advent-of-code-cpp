@@ -7,6 +7,7 @@
 #include <map>
 #include <vector>
 
+namespace rs = ranges;
 namespace rv = ranges::views;
 
 struct instruction {
@@ -29,13 +30,13 @@ std::vector<instruction> read_input(std::istream&& input)
     // clang-format on
 }
 
-int navigate(const std::vector<instruction>& input, glm::ivec2 heading, bool waypoint = false)
+int navigate(const std::vector<instruction>& input, glm::ivec2 heading, bool follow = false)
 {
     glm::ivec2 ship_position = {0, 0};
 
     for (const auto& instr : input) {
         if (instr.dir == 'L' || instr.dir == 'R') {
-            ranges::for_each(rv::iota(0, instr.amount / 90), [&heading, &instr](auto) {
+            rs::for_each(rv::iota(0, instr.amount / 90), [&heading, &instr](auto) {
                 std::tie(heading.x, heading.y) = std::make_tuple(
                     heading.y * ((instr.dir == 'L') ? -1 : 1),
                     heading.x * ((instr.dir == 'R') ? -1 : 1));
@@ -45,7 +46,7 @@ int navigate(const std::vector<instruction>& input, glm::ivec2 heading, bool way
             ship_position += heading * instr.amount;
         }
         else {
-            (waypoint ? heading : ship_position) += directions.at(instr.dir) * instr.amount;
+            (follow ? heading : ship_position) += directions.at(instr.dir) * instr.amount;
         }
     }
 
