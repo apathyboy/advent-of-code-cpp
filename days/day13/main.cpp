@@ -33,21 +33,6 @@ std::pair<int, std::vector<int>> read_input(std::istream&& input)
     return {earliest_departure, schedules};
 }
 
-int64_t find_first_time(int64_t bus1, int64_t bus2, int diff)
-{
-    int64_t bus1_time = bus1;
-    int64_t bus2_time = bus2;
-
-    while (bus1_time + diff != bus2_time) {
-        if (bus1_time < bus2_time) { bus1_time += bus1; }
-        else {
-            bus2_time += bus2;
-        }
-    }
-
-    return bus1_time;
-}
-
 int part1(int earliest_departure, const std::vector<int>& schedules)
 {
     int                found_departure = earliest_departure;
