@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <numeric>
 #include <optional>
 #include <string>
 
@@ -18,11 +19,15 @@ std::pair<int, std::vector<int>> read_input(std::istream&& input)
 
     std::getline(input, tmp);
 
-    auto schedules = tmp | rv::split(',')
-                     | rv::filter([](const auto& rng) { return rs::front(rng) != 'x'; })
-                     | rv::transform([](auto&& rng) {
-                           return std::stoi(std::string(&*rng.begin(), rs::distance(rng)));
-                       })
+    auto schedules = tmp | rv::split(',') | rv::transform([](auto&& rng) {
+                         int v = -1;
+
+                         if (rs::front(rng) != 'x') {
+                             v = std::stoi(std::string(&*rng.begin(), rs::distance(rng)));
+                         }
+
+                         return v;
+                     })
                      | rs::to_vector;
 
     return {earliest_departure, schedules};
@@ -34,7 +39,7 @@ int part1(int earliest_departure, const std::vector<int>& schedules)
     std::optional<int> result;
 
     while (!result) {
-        for (auto bus : schedules) {
+        for (auto bus : schedules | rv::filter([](int bus) { return bus > 0; })) {
             if (found_departure % bus == 0) { result = (found_departure - earliest_departure) * bus; }
         }
 
@@ -44,9 +49,24 @@ int part1(int earliest_departure, const std::vector<int>& schedules)
     return result.value();
 }
 
-int part2()
+int64_t part2(const std::vector<int>& schedules)
 {
-    return 0;
+    bool found = false;
+
+    int64_t timestamp = 0;
+    int64_t jump      = schedules[0];
+
+    for (auto [idx, bus] : rv::enumerate(schedules) | rv::tail) {
+        if (bus <= 0) continue;
+
+        while ((timestamp + idx) % bus != 0) {
+            timestamp += jump;
+        }
+
+        jump *= bus;
+    }
+
+    return timestamp;
 }
 
 #ifndef UNIT_TESTING
@@ -61,7 +81,7 @@ int main()
     fmt::print("Schedules: [{}]\n", fmt::join(schedules, ","));
 
     fmt::print("Part 1 Solution: {}\n", part1(earliest_departure, schedules));
-    fmt::print("Part 2 Solution: {}\n", part2());
+    fmt::print("Part 2 Solution: {}\n", part2(schedules));
 
     return 0;
 }
@@ -83,7 +103,7 @@ TEST_CASE("Can solve day 13 problems")
 
     SECTION("Can solve part 1 example") { REQUIRE(295 == part1(earliest_departure, schedules)); }
 
-    SECTION("Can solve part 2 example") { REQUIRE(0 == part2()); }
+    SECTION("Can solve part 2 example") { REQUIRE(1068781 == part2(schedules)); }
 }
 
 #endif
