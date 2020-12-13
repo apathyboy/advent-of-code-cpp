@@ -16,16 +16,11 @@ std::pair<int, std::vector<int>> read_input(std::istream&& input)
     std::getline(input, tmp);
 
     auto schedules = tmp | rv::split(',')
-                     | rv::transform([](auto const& rc) { return rc | rs::to<std::string>; })
+                     | rv::transform([](auto&& s) { return s | rs::to<std::string>; })
                      | rv::transform([](auto&& s) { return s == "x" ? 0 : std::stoi(s); })
                      | rs::to_vector;
 
     return {earliest_departure, schedules};
-}
-
-int calculate_wait(int start, int route_time)
-{
-    return static_cast<int>(route_time * std::ceil(start / static_cast<float>(route_time))) - start;
 }
 
 int part1(int earliest_departure, const std::vector<int>& schedules)
@@ -34,29 +29,30 @@ int part1(int earliest_departure, const std::vector<int>& schedules)
     auto wait_times = schedules 
         | rv::filter([](int i) { return i > 0; })
         | rv::transform([&earliest_departure](int i) {
-            return std::make_pair(calculate_wait(earliest_departure, i), i); });
+            return std::make_pair(i - (earliest_departure % i), i); });
     // clang-format on
 
     auto [wait, bus] = rs::min(wait_times, [](const auto& a, const auto& b) {
         return a.first < b.first;
     });
 
-    return static_cast<int>(wait * bus);
+    return wait * bus;
 }
 
 int64_t part2(const std::vector<int>& schedules)
 {
     int64_t timestamp = 0;
-    int64_t jump      = schedules[0];
+    int64_t delta     = rs::front(schedules);
 
-    for (auto [idx, bus] : rv::enumerate(schedules) | rv::tail) {
-        if (bus == 0) continue;
+    auto check_schedules = rv::enumerate(schedules) | rv::tail
+                           | rv::filter([](const auto& p) { return p.second != 0; });
 
+    for (auto [idx, bus] : check_schedules) {
         while ((timestamp + idx) % bus != 0) {
-            timestamp += jump;
+            timestamp += delta;
         }
 
-        jump *= bus;
+        delta *= bus;
     }
 
     return timestamp;
