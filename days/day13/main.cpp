@@ -1,11 +1,7 @@
-#include <fmt/format.h>
+#include <fmt/core.h>
 #include <range/v3/all.hpp>
 
 #include <fstream>
-#include <iostream>
-#include <numeric>
-#include <optional>
-#include <string>
 
 namespace rs = ranges;
 namespace rv = ranges::views;
@@ -19,34 +15,33 @@ std::pair<int, std::vector<int>> read_input(std::istream&& input)
 
     std::getline(input, tmp);
 
-    auto schedules = tmp | rv::split(',') | rv::transform([](auto&& rng) {
-                         int v = -1;
-
-                         if (rs::front(rng) != 'x') {
-                             v = std::stoi(std::string(&*rng.begin(), rs::distance(rng)));
-                         }
-
-                         return v;
-                     })
+    auto schedules = tmp | rv::split(',')
+                     | rv::transform([](auto const& rc) { return rc | rs::to<std::string>; })
+                     | rv::transform([](auto&& s) { return s == "x" ? 0 : std::stoi(s); })
                      | rs::to_vector;
 
     return {earliest_departure, schedules};
 }
 
+int calculate_wait(int start, int route_time)
+{
+    return static_cast<int>(route_time * std::ceil(start / static_cast<float>(route_time))) - start;
+}
+
 int part1(int earliest_departure, const std::vector<int>& schedules)
 {
-    int                found_departure = earliest_departure;
-    std::optional<int> result;
+    // clang-format off
+    auto wait_times = schedules 
+        | rv::filter([](int i) { return i > 0; })
+        | rv::transform([&earliest_departure](int i) {
+            return std::make_pair(calculate_wait(earliest_departure, i), i); });
+    // clang-format on
 
-    while (!result) {
-        for (auto bus : schedules | rv::filter([](int bus) { return bus > 0; })) {
-            if (found_departure % bus == 0) { result = (found_departure - earliest_departure) * bus; }
-        }
+    auto [wait, bus] = rs::min(wait_times, [](const auto& a, const auto& b) {
+        return a.first < b.first;
+    });
 
-        ++found_departure;
-    }
-
-    return result.value();
+    return static_cast<int>(wait * bus);
 }
 
 int64_t part2(const std::vector<int>& schedules)
@@ -55,7 +50,7 @@ int64_t part2(const std::vector<int>& schedules)
     int64_t jump      = schedules[0];
 
     for (auto [idx, bus] : rv::enumerate(schedules) | rv::tail) {
-        if (bus <= 0) continue;
+        if (bus == 0) continue;
 
         while ((timestamp + idx) % bus != 0) {
             timestamp += jump;
@@ -74,9 +69,6 @@ int main()
     fmt::print("Advent of Code 2020 - Day 13\n");
 
     auto [earliest_departure, schedules] = read_input(std::ifstream{"days/day13/puzzle.in"});
-
-    fmt::print("Earliest Departure: {}\n", earliest_departure);
-    fmt::print("Schedules: [{}]\n", fmt::join(schedules, ","));
 
     fmt::print("Part 1 Solution: {}\n", part1(earliest_departure, schedules));
     fmt::print("Part 2 Solution: {}\n", part2(schedules));
