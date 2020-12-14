@@ -53,7 +53,8 @@ std::vector<int64_t> explode_addresses(const std::string& mask, const std::strin
         std::swap(floating, tmp);
     }
 
-    return floating | rv::transform([](auto&& s) { return std::stoll(s, nullptr, 2); }) | rs::to_vector;
+    return floating | rv::transform([](auto&& s) { return std::stoll(s, nullptr, 2); })
+           | rs::to<std::vector<int64_t>>;
 }
 
 int64_t part1(std::istream&& input)
