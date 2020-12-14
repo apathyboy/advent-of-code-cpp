@@ -9,12 +9,12 @@
 namespace rs = ranges;
 namespace rv = ranges::views;
 
-std::string string_int_to_bits(const std::string& s)
+std::string parse_to_bits(const std::string& s)
 {
     return std::bitset<36>{static_cast<uint64_t>(std::stoll(s))}.to_string();
 }
 
-int64_t masked_string_to_num(const std::string& mask, const std::string& value)
+int64_t masked_to_int(const std::string& mask, const std::string& value)
 {
     // clang-format off
     auto result = rv::zip(value, mask) 
@@ -25,42 +25,35 @@ int64_t masked_string_to_num(const std::string& mask, const std::string& value)
     return std::stoll(result, nullptr, 2);
 }
 
-
-std::string masked_string2(const std::string& mask, const std::string& value)
-{
-    // clang-format off
-    return rv::zip(value, mask) 
-        | rv::transform([](auto&& p) { return (p.second == '0') ? p.first : p.second; })
-        | rs::to<std::string>;
-    // clang-format on
-}
-
 std::vector<int64_t> explode_addresses(const std::string& mask, const std::string& value)
 {
-    auto masked = masked_string2(mask, value);
+    auto masked = rv::zip(value, mask)
+                  | rv::transform([](auto&& p) { return (p.second == '0') ? p.first : p.second; })
+                  | rs::to<std::string>;
 
-    std::vector<std::string> tmp1{masked};
+    std::vector<std::string> floating{masked};
 
-    while (rs::find_if(tmp1, [](const auto& s) { return rs::contains(s, 'X'); }) != rs::end(tmp1)) {
-        std::vector<std::string> tmp2;
+    while (rs::find_if(floating, [](const auto& s) { return rs::contains(s, 'X'); })
+           != rs::end(floating)) {
+        std::vector<std::string> tmp;
 
-        for (auto s : tmp1) {
+        for (auto s : floating) {
             auto pos = s.find_first_of('X');
             if (pos != std::string::npos) {
                 s[pos] = '0';
-                tmp2.push_back(s);
+                tmp.push_back(s);
                 s[pos] = '1';
-                tmp2.push_back(s);
+                tmp.push_back(s);
             }
             else {
-                tmp2.push_back(s);
+                tmp.push_back(s);
             }
         }
 
-        std::swap(tmp1, tmp2);
+        std::swap(floating, tmp);
     }
 
-    return tmp1 | rv::transform([](auto&& s) { return std::stoll(s, nullptr, 2); }) | rs::to_vector;
+    return floating | rv::transform([](auto&& s) { return std::stoll(s, nullptr, 2); }) | rs::to_vector;
 }
 
 int64_t part1(std::istream&& input)
@@ -79,7 +72,7 @@ int64_t part1(std::istream&& input)
             }
 
             auto idx = std::stoi(m.str(1));
-            auto num = masked_string_to_num(current_mask, string_int_to_bits(m.str(2)));
+            auto num = masked_to_int(current_mask, parse_to_bits(m.str(2)));
 
             nums[idx] = num;
         }
@@ -103,7 +96,7 @@ int64_t part2(std::istream&& input)
                 throw std::runtime_error{"Invalid input received"};
             }
 
-            auto addresses = explode_addresses(current_mask, string_int_to_bits(m.str(1)));
+            auto addresses = explode_addresses(current_mask, parse_to_bits(m.str(1)));
 
             for (auto address : addresses) {
                 nums[address] = std::stoll(m.str(2));
@@ -136,18 +129,18 @@ int main()
 
 TEST_CASE("Can convert string integer to 32 bit representation")
 {
-    REQUIRE(string_int_to_bits("11") == "000000000000000000000000000000001011");
-    REQUIRE(string_int_to_bits("101") == "000000000000000000000000000001100101");
-    REQUIRE(string_int_to_bits("73") == "000000000000000000000000000001001001");
+    REQUIRE(parse_to_bits("11") == "000000000000000000000000000000001011");
+    REQUIRE(parse_to_bits("101") == "000000000000000000000000000001100101");
+    REQUIRE(parse_to_bits("73") == "000000000000000000000000000001001001");
 }
 
 TEST_CASE("Can convert masked string to int")
 {
     std::string mask = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X";
 
-    REQUIRE(masked_string_to_num(mask, "000000000000000000000000000000001011") == 73);
-    REQUIRE(masked_string_to_num(mask, "000000000000000000000000000001100101") == 101);
-    REQUIRE(masked_string_to_num(mask, "000000000000000000000000000000000000") == 64);
+    REQUIRE(masked_to_int(mask, "000000000000000000000000000000001011") == 73);
+    REQUIRE(masked_to_int(mask, "000000000000000000000000000001100101") == 101);
+    REQUIRE(masked_to_int(mask, "000000000000000000000000000000000000") == 64);
 }
 
 TEST_CASE("Can explode address to all its floating addresses")
