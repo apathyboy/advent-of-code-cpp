@@ -48,7 +48,8 @@ target_compile_options(
     aoc2020
     PUBLIC $<$<CXX_COMPILER_ID:MSVC>:-W4
            -WX
-           -analyze>)
+           -analyze
+           -wd4702>) # TODO range-v3 error
 
 target_link_libraries(aoc2020 PRIVATE range-v3::meta)
 
