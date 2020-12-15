@@ -3,34 +3,33 @@
 
 #include <cstdint>
 #include <fstream>
-#include <iostream>
 #include <unordered_map>
 #include <vector>
 
 namespace rs = ranges;
 namespace rv = ranges::views;
 
-
-int64_t solve(const std::vector<int>& input, int nth_number)
+int solve(const std::vector<int>& input, int nth_number)
 {
-    std::unordered_map<int, std::vector<int>> cache;
+    // clang-format off
+    auto cache = input 
+        | rv::enumerate 
+        | rv::transform([](auto&& p) {
+            return std::make_pair(p.second, static_cast<int>(p.first + 1)); })
+        | rv::drop_last(1) 
+        | rs::to<std::unordered_map<int, int>>;
+    // clang-format on
 
-    int last_number  = 0;
-    int current_turn = 1;
+    int last_number = rs::back(input);
 
-    for (auto i : input) {
-        last_number = i;
-        cache[last_number].push_back(current_turn++);
-    }
-
-    while (current_turn <= nth_number) {
-        if (cache[last_number].size() == 1) { last_number = 0; }
-        else {
-            auto rng    = cache[last_number] | rv::reverse | rv::take(2);
-            last_number = rng[0] - rng[1];
+    for (int i : rv::iota(static_cast<int>(input.size()), nth_number)) {
+        if (cache.contains(last_number)) {
+            std::tie(last_number, cache[last_number]) = std::make_tuple(i - cache[last_number], i);
         }
-
-        cache[last_number].push_back(current_turn++);
+        else {
+            cache[last_number] = i;
+            last_number        = 0;
+        }
     }
 
     return last_number;
