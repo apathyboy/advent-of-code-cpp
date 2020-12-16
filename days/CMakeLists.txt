@@ -60,4 +60,5 @@ add_day(NAME day12 LIBS glm)
 add_day(NAME day13)
 add_day(NAME day14)
 add_day(NAME day15)
+add_day(NAME day16)
 # cmake-format: on
