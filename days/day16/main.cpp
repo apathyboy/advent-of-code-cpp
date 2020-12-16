@@ -134,11 +134,11 @@ int64_t part2(const document& input, const std::string& search_field)
 
     while (rules.size() > 0) {
         for (auto&& [idx, column] : columns | rv::enumerate) {
-            auto matching_rules = rules | rv::filter([&column](const auto& r) {
-                                      return rs::all_of(column, [&r](auto n) {
-                                          return match_rule(r, n);
-                                      });
-                                  });
+            // clang-format off
+            auto matching_rules = rules 
+                | rv::filter([&column](const auto& r) {
+                    return rs::all_of(column, [&r](auto n) { return match_rule(r, n); }); });
+            // clang-format on
 
             if (rs::distance(matching_rules) == 1) {
                 auto matching_rule = rs::front(matching_rules);
@@ -147,12 +147,12 @@ int64_t part2(const document& input, const std::string& search_field)
                     search_vals.push_back(input.ticket[idx]);
                 }
 
-                rules.erase(
-                    std::remove_if(
-                        rules.begin(),
-                        rules.end(),
+                rs::erase(
+                    rules,
+                    rs::remove_if(
+                        rules,
                         [&matching_rule](const auto& r) { return r.name == matching_rule.name; }),
-                    rules.end());
+                    rs::end(rules));
             }
         }
     }
