@@ -70,13 +70,7 @@ std::vector<std::vector<int>> read_input_nearby_tickets(std::istream& input)
 
 document read_input(std::istream&& input)
 {
-    document d;
-
-    d.rules          = read_input_rules(input);
-    d.ticket         = read_input_ticket(input);
-    d.nearby_tickets = read_input_nearby_tickets(input);
-
-    return d;
+    return {read_input_rules(input), read_input_ticket(input), read_input_nearby_tickets(input)};
 }
 
 bool match_rule(const rule& r, int field_value)
