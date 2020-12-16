@@ -1,5 +1,13 @@
 #include <fmt/format.h>
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 28278)
+#endif
 #include <range/v3/all.hpp>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include <fstream>
 #include <iostream>
@@ -9,15 +17,13 @@ namespace rs = ranges;
 namespace rv = ranges::views;
 
 struct rule {
-    std::string                      name;
-    std::vector<std::pair<int, int>> valid_ranges;
+    std::string                        name;
+    std::array<std::pair<int, int>, 2> valid_ranges;
 };
 
 struct document {
-    std::vector<rule> rules;
-
-    std::vector<int> ticket;
-
+    std::vector<rule>             rules;
+    std::vector<int>              ticket;
     std::vector<std::vector<int>> nearby_tickets;
 };
 
@@ -36,13 +42,11 @@ std::vector<rule> read_input_rules(std::istream& input)
 
     while (std::getline(input, tmp)) {
         if (tmp == "") break;
-
         if (std::regex_match(tmp, m, std::regex{R"((.*): (\d+)-(\d+) or (\d+)-(\d+))"})) {
             rules.push_back(rule{
                 m.str(1),
-                std::vector{
-                    std::make_pair(std::stoi(m.str(2)), std::stoi(m.str(3))),
-                    std::make_pair(std::stoi(m.str(4)), std::stoi(m.str(5)))}});
+                {std::pair{std::stoi(m.str(2)), std::stoi(m.str(3))},
+                 std::pair{std::stoi(m.str(4)), std::stoi(m.str(5))}}});
         }
     }
     return rules;
@@ -50,29 +54,18 @@ std::vector<rule> read_input_rules(std::istream& input)
 
 std::vector<int> read_input_ticket(std::istream& input)
 {
-    std::string tmp;
+    std::string tmp, ticket;
     std::getline(input, tmp);
-
-    if (tmp != "your ticket:") { throw std::runtime_error{"Invalid ticket!"}; }
-
+    std::getline(input, ticket);
     std::getline(input, tmp);
-
-    auto ticket = string_to_ints(tmp);
-
-    std::getline(input, tmp);
-
-    return ticket;
+    return string_to_ints(ticket);
 }
 
 std::vector<std::vector<int>> read_input_nearby_tickets(std::istream& input)
 {
     std::string tmp;
     std::getline(input, tmp);
-
-    if (tmp != "nearby tickets:") { throw std::runtime_error{"Invalid nearby tickets!"}; }
-
-    return rs::getlines(input) | rv::transform([](auto&& s) { return string_to_ints(s); })
-           | rs::to_vector;
+    return rs::getlines(input) | rv::transform(string_to_ints) | rs::to_vector;
 }
 
 document read_input(std::istream&& input)
@@ -103,61 +96,55 @@ bool is_valid_ticket(const std::vector<rule>& rules, const std::vector<int>& tic
     return rs::all_of(ticket, [&rules](int n) { return is_valid_field(rules, n); });
 }
 
+auto gather_valid_tickets(const std::vector<rule>& rules, const std::vector<std::vector<int>>& tickets)
+{
+    return tickets | rv::filter([&rules](const auto& t) { return is_valid_ticket(rules, t); })
+           | rs::to_vector;
+}
+
+auto transpose_tickets(const std::vector<std::vector<int>>& tickets)
+{
+    return rv::iota(0, static_cast<int>(tickets[0].size())) | rv::transform([&tickets](int i) {
+               return tickets | rv::transform([i](auto&& t) { return t[i]; }) | rs::to_vector;
+           })
+           | rs::to_vector;
+}
+
 int64_t part1(const document& input)
 {
-    // clang-format off
-    return rs::accumulate(input.nearby_tickets 
-            | rv::join
+    return rs::accumulate(
+        input.nearby_tickets | rv::join
             | rv::filter([&input](int i) { return !is_valid_field(input.rules, i); }),
         0);
-    // clang-format on
 }
 
 int64_t part2(const document& input, const std::string& search_field)
 {
-    auto             rules = input.rules;
-    std::vector<int> search_vals;
+    auto    rules  = input.rules;
+    int64_t result = 1;
 
-    // clang-format off
-    auto valid_tickets = input.nearby_tickets 
-        | rv::filter([&input](const auto& t) { return is_valid_ticket(input.rules, t); });
-    // clang-format on
-
-    // clang-format off
-    auto columns = rv::iota(0, static_cast<int>(input.ticket.size())) 
-        | rv::transform([&valid_tickets](int i) {
-            return valid_tickets 
-                | rv::transform([i](auto&& t) { return t[i]; })
-                | rs::to_vector; })
-        | rs::to_vector;
-    // clang-format on
+    auto columns = transpose_tickets(gather_valid_tickets(input.rules, input.nearby_tickets));
 
     while (rules.size() > 0) {
         for (auto&& [idx, column] : columns | rv::enumerate) {
-            // clang-format off
-            auto matching_rules = rules 
-                | rv::filter([c = std::ref(column)](const auto& r) {
-                    return rs::all_of(c.get(), [&r](auto n) { return match_rule(r, n); }); });
-            // clang-format on
+            auto matching_rules = rules | rv::filter([c = std::ref(column)](const auto& r) {
+                                      return rs::all_of(c.get(), [&r](auto n) {
+                                          return match_rule(r, n);
+                                      });
+                                  });
 
             if (rs::distance(matching_rules) == 1) {
-                auto matching_rule = rs::front(matching_rules);
-
-                if (matching_rule.name.rfind(search_field, 0) == 0) {
-                    search_vals.push_back(input.ticket[idx]);
-                }
-
+                auto match = rs::front(matching_rules);
+                if (match.name.rfind(search_field, 0) == 0) { result *= input.ticket[idx]; }
                 rs::erase(
                     rules,
-                    rs::remove_if(
-                        rules,
-                        [&matching_rule](const auto& r) { return r.name == matching_rule.name; }),
+                    rs::remove_if(rules, [&match](const auto& r) { return r.name == match.name; }),
                     rs::end(rules));
             }
         }
     }
 
-    return rs::accumulate(search_vals, int64_t{1}, std::multiplies<>{});
+    return result;
 }
 
 
