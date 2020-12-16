@@ -38,11 +38,11 @@ std::vector<rule> read_input_rules(std::istream& input)
         if (tmp == "") break;
 
         if (std::regex_match(tmp, m, std::regex{R"((.*): (\d+)-(\d+) or (\d+)-(\d+))"})) {
-            rules.emplace_back(
+            rules.push_back(rule{
                 m.str(1),
                 std::vector{
                     std::make_pair(std::stoi(m.str(2)), std::stoi(m.str(3))),
-                    std::make_pair(std::stoi(m.str(4)), std::stoi(m.str(5)))});
+                    std::make_pair(std::stoi(m.str(4)), std::stoi(m.str(5)))}});
         }
     }
     return rules;
@@ -136,8 +136,8 @@ int64_t part2(const document& input, const std::string& search_field)
         for (auto&& [idx, column] : columns | rv::enumerate) {
             // clang-format off
             auto matching_rules = rules 
-                | rv::filter([&column](const auto& r) {
-                    return rs::all_of(column, [&r](auto n) { return match_rule(r, n); }); });
+                | rv::filter([c = std::ref(column)](const auto& r) {
+                    return rs::all_of(c.get(), [&r](auto n) { return match_rule(r, n); }); });
             // clang-format on
 
             if (rs::distance(matching_rules) == 1) {
