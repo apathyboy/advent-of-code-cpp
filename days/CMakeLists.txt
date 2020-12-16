@@ -12,8 +12,11 @@ function(add_day)
     add_executable(${DAY_NAME} ${DAY_NAME}/main.cpp)
 
     target_compile_options(
-        ${DAY_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>: -wd4459 # TODO range-v3 error
-                            -wd4702>) # TODO range-v3 error
+        ${DAY_NAME}
+        PRIVATE $<$<CXX_COMPILER_ID:MSVC>:
+                -wd4996
+                -wd4459 # TODO range-v3 error
+                -wd4702>) # TODO range-v3 error
 
     target_link_libraries(
         ${DAY_NAME}
@@ -34,6 +37,7 @@ function(add_day)
     target_compile_options(
         ${DAY_NAME}_tests
         PRIVATE $<$<CXX_COMPILER_ID:MSVC>:
+                -wd4996
                 -wd4459 # TODO range-v3 error
                 -wd4702 # TODO range-v3 error
                 -wd6330>) # TODO catch2 error
