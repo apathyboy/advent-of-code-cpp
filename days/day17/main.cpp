@@ -86,7 +86,7 @@ int count_active_neighbors(grid_t& grid, glm::ivec3 p)
     return active;
 }
 
-int count_active_neighbors2(grid2_t& grid, glm::ivec4 p)
+int count_active_neighbors(grid2_t& grid, glm::ivec4 p)
 {
     int active = 0;
 
@@ -103,17 +103,14 @@ int count_active_neighbors2(grid2_t& grid, glm::ivec4 p)
     return active;
 }
 
-int64_t count_active(const grid_t& g)
+template <typename T>
+int64_t count_active(const T& g)
 {
     return rs::count(g | rv::values, true);
 }
 
-int64_t count_active2(const grid2_t& g)
-{
-    return rs::count(g | rv::values, true);
-}
-
-void run_cycle(grid_t& grid)
+template <typename T>
+void run_cycle(T& grid)
 {
     auto tmp = grid;
 
@@ -121,32 +118,9 @@ void run_cycle(grid_t& grid)
     for (auto& p : tmp) {
         auto active_neighbors = count_active_neighbors(grid, p.first);
 
-        if (p.second) {
-            if (active_neighbors != 2 && active_neighbors != 3) { p.second = false; }
-        }
-        else {
-            if (active_neighbors == 3) { p.second = true; }
-        }
-    }
-
-    for (auto& p : grid) {
-        p.second = tmp[p.first];
-    }
-}
-
-void run_cycle2(grid2_t& grid)
-{
-    auto tmp = grid;
-
-    // loop through tmp and check against grid
-    for (auto& p : tmp) {
-        auto active_neighbors = count_active_neighbors2(grid, p.first);
-
-        if (p.second) {
-            if (active_neighbors != 2 && active_neighbors != 3) { p.second = false; }
-        }
-        else {
-            if (active_neighbors == 3) { p.second = true; }
+        if (p.second && active_neighbors != 2 && active_neighbors != 3) { p.second = false; }
+        else if (active_neighbors == 3) {
+            p.second = true;
         }
     }
 
@@ -167,10 +141,10 @@ int64_t part1(grid_t input)
 int64_t part2(grid2_t input)
 {
     for (int i : rv::iota(0, 6)) {
-        run_cycle2(input);
+        run_cycle(input);
     }
 
-    return count_active2(input);
+    return count_active(input);
 }
 
 #ifndef UNIT_TESTING
