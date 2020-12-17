@@ -14,6 +14,7 @@ function(add_day)
     target_compile_options(
         ${DAY_NAME}
         PRIVATE $<$<CXX_COMPILER_ID:MSVC>:
+                -wd4201
                 -wd4996
                 -wd4459 # TODO range-v3 error
                 -wd4702>) # TODO range-v3 error
@@ -37,6 +38,7 @@ function(add_day)
     target_compile_options(
         ${DAY_NAME}_tests
         PRIVATE $<$<CXX_COMPILER_ID:MSVC>:
+                -wd4201
                 -wd4996
                 -wd4459 # TODO range-v3 error
                 -wd4702 # TODO range-v3 error
@@ -65,7 +67,7 @@ add_day(NAME day13)
 add_day(NAME day14)
 add_day(NAME day15)
 add_day(NAME day16)
-add_day(NAME day17)
+add_day(NAME day17 LIBS glm)
 add_day(NAME day18)
 add_day(NAME day19)
 add_day(NAME day20)
