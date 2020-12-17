@@ -10,103 +10,75 @@
 namespace rs = ranges;
 namespace rv = ranges::views;
 
-using grid_t  = std::unordered_map<glm::ivec3, bool>;
-using grid2_t = std::unordered_map<glm::ivec4, bool>;
+template <typename T>
+using grid_t = std::unordered_map<T, bool>;
 
-grid_t read_input_grid(std::istream&& input)
+template <typename T>
+void pad_grid(grid_t<T>& grid, T limits)
 {
-    glm::ivec3 expanse = {0, 0, 0};
-
-    std::string tmp;
-    grid_t      grid;
-
-    while (std::getline(input, tmp)) {
-        expanse.x = 0;
-        for (auto c : tmp) {
-            grid[expanse] = (c == '#');
-            ++expanse.x;
-        }
-        ++expanse.y;
-    }
-
     for (int tmp_z = -1; tmp_z <= 1; ++tmp_z) {
-        for (int tmp_y = -1; tmp_y <= expanse.y; ++tmp_y) {
-            for (int tmp_x = -1; tmp_x <= expanse.x; ++tmp_x) {
-                glm::ivec3 pos = {tmp_x, tmp_y, tmp_z};
-                if (!grid.contains(pos)) { grid[pos] = false; }
-            }
-        }
-    }
-
-    return grid;
-}
-
-grid2_t read_input_grid2(std::istream&& input)
-{
-    glm::ivec4 expanse = {0, 0, 0, 0};
-
-    std::string tmp;
-    grid2_t     grid;
-
-    while (std::getline(input, tmp)) {
-        expanse.x = 0;
-        for (auto c : tmp) {
-            grid[expanse] = (c == '#');
-            ++expanse.x;
-        }
-        ++expanse.y;
-    }
-
-    for (int tmp_w = -1; tmp_w <= 1; ++tmp_w) {
-        for (int tmp_z = -1; tmp_z <= 1; ++tmp_z) {
-            for (int tmp_y = -1; tmp_y <= expanse.y; ++tmp_y) {
-                for (int tmp_x = -1; tmp_x <= expanse.x; ++tmp_x) {
-                    glm::ivec4 pos = {tmp_x, tmp_y, tmp_z, tmp_w};
+        for (int tmp_y = -1; tmp_y <= limits.y; ++tmp_y) {
+            for (int tmp_x = -1; tmp_x <= limits.x; ++tmp_x) {
+                if constexpr (limits.length() == 4) {
+                    for (int tmp_w = -1; tmp_w <= 1; ++tmp_w) {
+                        glm::ivec4 pos = {tmp_x, tmp_y, tmp_z, tmp_w};
+                        if (!grid.contains(pos)) { grid[pos] = false; }
+                    }
+                }
+                else {
+                    glm::ivec3 pos = {tmp_x, tmp_y, tmp_z};
                     if (!grid.contains(pos)) { grid[pos] = false; }
                 }
             }
         }
     }
+}
+
+template <typename T>
+grid_t<T> read_input_grid(std::istream&& input)
+{
+    T limits = {};
+
+    std::string tmp;
+    grid_t<T>   grid;
+
+    while (std::getline(input, tmp)) {
+        limits.x = 0;
+        for (auto c : tmp) {
+            grid[limits] = (c == '#');
+            ++limits.x;
+        }
+        ++limits.y;
+    }
+
+    pad_grid(grid, limits);
 
     return grid;
 }
 
-int count_active_neighbors(grid_t& grid, glm::ivec3 p)
+template <typename T>
+int count_active_neighbors(grid_t<T>& grid, T p)
 {
     int active = 0;
 
     for (int z = p.z - 1; z <= p.z + 1; ++z) {
         for (int y = p.y - 1; y <= p.y + 1; ++y) {
             for (int x = p.x - 1; x <= p.x + 1; ++x) {
-                if (p != glm::ivec3{x, y, z}) { active += grid[glm::ivec3{x, y, z}] ? 1 : 0; }
-            }
-        }
-    }
-
-    return active;
-}
-
-int count_active_neighbors(grid2_t& grid, glm::ivec4 p)
-{
-    int active = 0;
-
-    for (int w = p.w - 1; w <= p.w + 1; ++w) {
-        for (int z = p.z - 1; z <= p.z + 1; ++z) {
-            for (int y = p.y - 1; y <= p.y + 1; ++y) {
-                for (int x = p.x - 1; x <= p.x + 1; ++x) {
-                    if (p != glm::ivec4{x, y, z, w}) { active += grid[glm::ivec4{x, y, z, w}] ? 1 : 0; }
+                if constexpr (p.length() == 4) {
+                    for (int w = p.w - 1; w <= p.w + 1; ++w) {
+                        if (p != glm::ivec4{x, y, z, w}) {
+                            active += grid[glm::ivec4{x, y, z, w}] ? 1 : 0;
+                        }
+                    }
+                }
+                else {
+                    if (p != glm::ivec3{x, y, z}) { active += grid[glm::ivec3{x, y, z}] ? 1 : 0; }
                 }
             }
         }
     }
 
     return active;
-}
-
-template <typename T>
-int64_t count_active(const T& g)
-{
-    return rs::count(g | rv::values, true);
 }
 
 template <typename T>
@@ -129,22 +101,14 @@ void run_cycle(T& grid)
     }
 }
 
-int64_t part1(grid_t input)
+template <typename T>
+int64_t solve(grid_t<T> grid)
 {
     for (int i : rv::iota(0, 6)) {
-        run_cycle(input);
+        run_cycle(grid);
     }
 
-    return count_active(input);
-}
-
-int64_t part2(grid2_t input)
-{
-    for (int i : rv::iota(0, 6)) {
-        run_cycle(input);
-    }
-
-    return count_active(input);
+    return rs::count(grid | rv::values, true);
 }
 
 #ifndef UNIT_TESTING
@@ -155,8 +119,8 @@ int main()
 
     std::string input_path = "days/day17/puzzle.in";
 
-    fmt::print("Part 1 Solution: {}\n", part1(read_input_grid(std::ifstream{input_path})));
-    fmt::print("Part 2 Solution: {}\n", part2(read_input_grid2(std::ifstream{input_path})));
+    fmt::print("Part 1 Solution: {}\n", solve(read_input_grid<glm::ivec3>(std::ifstream{input_path})));
+    fmt::print("Part 2 Solution: {}\n", solve(read_input_grid<glm::ivec4>(std::ifstream{input_path})));
 
     return 0;
 }
@@ -169,7 +133,7 @@ int main()
 
 TEST_CASE("Reading new position creates empty entry")
 {
-    grid_t grid;
+    grid_t<glm::ivec3> grid;
 
     REQUIRE(0 == grid.size());
 
@@ -185,24 +149,10 @@ TEST_CASE("Can read puzzle input")
 ..#
 ###)";
 
-    auto grid = read_input_grid(std::move(ss));
+    auto grid = read_input_grid<glm::ivec3>(std::move(ss));
 
     REQUIRE_FALSE(grid[glm::ivec3{0, 0, 0}]);
     REQUIRE(grid[glm::ivec3{2, 2, 0}]);
-}
-
-TEST_CASE("Can count active elements")
-{
-
-    std::stringstream ss;
-
-    ss << R"(.#.
-..#
-###)";
-
-    auto grid = read_input_grid(std::move(ss));
-
-    REQUIRE(5 == count_active(grid));
 }
 
 TEST_CASE("Can count active neighbors")
@@ -214,7 +164,7 @@ TEST_CASE("Can count active neighbors")
 ..#
 ###)";
 
-    auto grid = read_input_grid(std::move(ss));
+    auto grid = read_input_grid<glm::ivec3>(std::move(ss));
 
     REQUIRE(1 == count_active_neighbors(grid, {0, 0, 0}));
     REQUIRE(1 == count_active_neighbors(grid, {1, 0, 0}));
@@ -237,30 +187,13 @@ TEST_CASE("Running cycle increases grid size")
 ..#
 ###)";
 
-    auto grid = read_input_grid(std::move(ss));
+    auto grid = read_input_grid<glm::ivec3>(std::move(ss));
 
     REQUIRE(75 == grid.size());
 
     run_cycle(grid);
 
     REQUIRE(245 == grid.size());
-}
-
-TEST_CASE("Running cycle increases count")
-{
-    std::stringstream ss;
-
-    ss << R"(.#.
-..#
-###)";
-
-    auto grid = read_input_grid(std::move(ss));
-
-    REQUIRE(5 == count_active(grid));
-
-    run_cycle(grid);
-
-    REQUIRE(11 == count_active(grid));
 }
 
 TEST_CASE("Can solve part 1 example")
@@ -271,7 +204,7 @@ TEST_CASE("Can solve part 1 example")
 ..#
 ###)";
 
-    REQUIRE(112 == part1(read_input_grid(std::move(ss))));
+    REQUIRE(112 == solve(read_input_grid<glm::ivec3>(std::move(ss))));
 }
 
 TEST_CASE("Can solve part 2 example")
@@ -282,7 +215,7 @@ TEST_CASE("Can solve part 2 example")
 ..#
 ###)";
 
-    REQUIRE(848 == part2(read_input_grid2(std::move(ss))));
+    REQUIRE(848 == solve(read_input_grid<glm::ivec4>(std::move(ss))));
 }
 
 #endif
