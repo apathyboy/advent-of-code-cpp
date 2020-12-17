@@ -14,12 +14,12 @@ template <typename T>
 using grid_t = std::unordered_map<T, bool>;
 
 template <typename T>
-void pad_grid(grid_t<T>& grid, T limits)
+void pad_grid(grid_t<T>& grid, T max_xy)
 {
     for (int tmp_z = -1; tmp_z <= 1; ++tmp_z) {
-        for (int tmp_y = -1; tmp_y <= limits.y; ++tmp_y) {
-            for (int tmp_x = -1; tmp_x <= limits.x; ++tmp_x) {
-                if constexpr (limits.length() == 4) {
+        for (int tmp_y = -1; tmp_y <= max_xy.y; ++tmp_y) {
+            for (int tmp_x = -1; tmp_x <= max_xy.x; ++tmp_x) {
+                if constexpr (max_xy.length() == 4) {
                     for (int tmp_w = -1; tmp_w <= 1; ++tmp_w) {
                         glm::ivec4 pos = {tmp_x, tmp_y, tmp_z, tmp_w};
                         if (!grid.contains(pos)) { grid[pos] = false; }
@@ -37,21 +37,21 @@ void pad_grid(grid_t<T>& grid, T limits)
 template <typename T>
 grid_t<T> read_input_grid(std::istream&& input)
 {
-    T limits = {};
+    T max_xy = {};
 
     std::string tmp;
     grid_t<T>   grid;
 
     while (std::getline(input, tmp)) {
-        limits.x = 0;
+        max_xy.x = 0;
         for (auto c : tmp) {
-            grid[limits] = (c == '#');
-            ++limits.x;
+            grid[max_xy] = (c == '#');
+            ++max_xy.x;
         }
-        ++limits.y;
+        ++max_xy.y;
     }
 
-    pad_grid(grid, limits);
+    pad_grid(grid, max_xy);
 
     return grid;
 }
@@ -86,19 +86,15 @@ void run_cycle(T& grid)
 {
     auto tmp = grid;
 
-    // loop through tmp and check against grid
-    for (auto& p : tmp) {
-        auto active_neighbors = count_active_neighbors(grid, p.first);
-
-        if (p.second && active_neighbors != 2 && active_neighbors != 3) { p.second = false; }
-        else if (active_neighbors == 3) {
+    for (auto& p : grid) {
+        auto active = count_active_neighbors(tmp, p.first);
+        if (p.second && active != 2 && active != 3) { p.second = false; }
+        else if (active == 3) {
             p.second = true;
         }
     }
 
-    for (auto& p : grid) {
-        p.second = tmp[p.first];
-    }
+    grid.merge(tmp);
 }
 
 template <typename T>
