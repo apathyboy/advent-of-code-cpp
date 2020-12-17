@@ -16,7 +16,6 @@ int64_t part2()
     return 0;
 }
 
-
 #ifndef UNIT_TESTING
 
 int main()
