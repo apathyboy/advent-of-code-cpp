@@ -42,7 +42,7 @@ auto read_rules(std::istream& input)
             r.subrules = tmp | rv::split('|')
                          | rv::transform([](auto&& s) { return s | rs::to<std::string>; })
                          | rv::transform([](auto&& s) {
-                               return s | rv::trim([](char c) { return std::isspace(c); })
+                               return s | rv::trim([](uint8_t c) { return std::isspace(c); })
                                       | rs::to<std::string>;
                            })
                          | rv::cache1 | rv::transform([](auto&& s) {
