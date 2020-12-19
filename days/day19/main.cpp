@@ -62,12 +62,9 @@ auto read_rules(std::istream& input)
 
 auto read_input(std::istream&& input)
 {
-    auto rules = read_rules(input);
-
-    auto messages = rs::getlines(input) | rv::transform([](auto&& s) { return s | rs::to<std::string>; })
-                    | rs::to<std::vector<std::string>>;
-
-    return std::make_pair(std::move(rules), std::move(messages));
+    return std::make_pair(read_rules(input), rs::getlines(input) | rv::transform([](auto&& s) {
+                                                 return s | rs::to<std::string>;
+                                             }) | rs::to<std::vector<std::string>>);
 }
 
 bool match(const std::unordered_map<int, rule>& rules, const rule& r, const std::string& s, int64_t& idx)
