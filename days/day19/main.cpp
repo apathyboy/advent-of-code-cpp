@@ -14,6 +14,7 @@ namespace rv = ranges::views;
 struct rule {
     enum class TYPE { MATCH, SUBRULE };
     TYPE                          type;
+    int                           id;
     std::vector<std::vector<int>> subrules;
     char                          match;
 };
@@ -27,18 +28,16 @@ auto read_rules(std::istream& input)
         if (tmp == "") break;
 
         std::smatch m;
-        rule        r{rule::TYPE::SUBRULE, {}, ' '};
-
-        int rule_id = 0;
+        rule        r{rule::TYPE::SUBRULE, 0, {}, ' '};
 
         if (std::regex_match(tmp, m, std::regex(R"((\d+): \"([a|b])\")"))) {
-            rule_id = std::stoi(m.str(1));
+            r.id    = std::stoi(m.str(1));
             r.type  = rule::TYPE::MATCH;
             r.match = m.str(2)[0];
         }
         else if (std::regex_match(tmp, m, std::regex(R"((\d+):(.*))"))) {
-            rule_id = std::stoi(m.str(1));
-            tmp     = m.str(2);
+            r.id = std::stoi(m.str(1));
+            tmp  = m.str(2);
 
             r.subrules = tmp | rv::split('|')
                          | rv::transform([](auto&& s) { return s | rs::to<std::string>; })
@@ -54,7 +53,7 @@ auto read_rules(std::istream& input)
                          | rs::to<std::vector<std::vector<int>>>;
         }
 
-        rules.emplace(std::make_pair(rule_id, r));
+        rules.emplace(std::make_pair(r.id, r));
     }
 
     return rules;
@@ -62,23 +61,23 @@ auto read_rules(std::istream& input)
 
 auto read_input(std::istream&& input)
 {
-    return std::make_pair(read_rules(input), rs::getlines(input) | rv::transform([](auto&& s) {
-                                                 return s | rs::to<std::string>;
-                                             }) | rs::to<std::vector<std::string>>);
+    auto rules = read_rules(input);
+    return std::make_pair(rules, rs::getlines(input) | rs::to<std::vector<std::string>>);
 }
 
 bool match(const std::unordered_map<int, rule>& rules, const rule& r, const std::string& s, int64_t& idx)
 {
     if (r.type == rule::TYPE::MATCH) { return s[idx++] == r.match; }
 
-    return rs::any_of(r.subrules, [&rules, &s, &idx](const auto& sr) {
-        int64_t tmp = idx;
-        if (!rs::all_of(sr | rv::enumerate, [&rules, &s, &idx](const auto& p) {
-                if (idx == static_cast<int64_t>(s.length())) {
-                    // break out
-                    return p.first == 2;
-                }
-                return match(rules, rules.at(p.second), s, idx);
+    return rs::any_of(r.subrules, [&rules, &s, &idx, &r](const auto& sr) {
+        int64_t tmp          = idx;
+        bool    is_recursing = false;
+        if (!rs::all_of(sr | rv::enumerate, [&rules, &s, &idx, &r, &is_recursing](const auto& p) {
+                if (idx == static_cast<int64_t>(s.length())) return is_recursing;
+
+                auto next_rule = rules.at(p.second);
+                is_recursing   = r.id == next_rule.id;
+                return match(rules, next_rule, s, idx);
             })) {
             idx = tmp;
             return false;
@@ -101,8 +100,8 @@ int64_t part1(const std::unordered_map<int, rule>& rules, const std::vector<std:
 
 int64_t part2(std::unordered_map<int, rule> rules, const std::vector<std::string>& messages)
 {
-    rule r8{rule::TYPE::SUBRULE, std::vector{std::vector{42}, std::vector{42, 8}}, ' '};
-    rule r11{rule::TYPE::SUBRULE, std::vector{std::vector{42, 31}, std::vector{42, 11, 31}}, ' '};
+    rule r8{rule::TYPE::SUBRULE, 8, std::vector{std::vector{42}, std::vector{42, 8}}, ' '};
+    rule r11{rule::TYPE::SUBRULE, 11, std::vector{std::vector{42, 31}, std::vector{42, 11, 31}}, ' '};
 
     rules[8]  = r8;
     rules[11] = r11;
@@ -187,8 +186,8 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba)";
 
     auto [rules, messages] = read_input(std::move(ss));
 
-    rule r8{rule::TYPE::SUBRULE, std::vector{std::vector{42}, std::vector{42, 8}}, ' '};
-    rule r11{rule::TYPE::SUBRULE, std::vector{std::vector{42, 31}, std::vector{42, 11, 31}}, ' '};
+    rule r8{rule::TYPE::SUBRULE, 8, std::vector{std::vector{42}, std::vector{42, 8}}, ' '};
+    rule r11{rule::TYPE::SUBRULE, 11, std::vector{std::vector{42, 31}, std::vector{42, 11, 31}}, ' '};
 
     rules[8]  = r8;
     rules[11] = r11;
