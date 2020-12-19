@@ -13,9 +13,7 @@ namespace rv = ranges::views;
 
 struct rule {
     enum class TYPE { MATCH, SUBRULE };
-
-    TYPE type;
-
+    TYPE                          type;
     std::vector<std::vector<int>> subrules;
     char                          match;
 };
@@ -29,37 +27,34 @@ auto read_rules(std::istream& input)
         if (tmp == "") break;
 
         std::smatch m;
+        rule        r{rule::TYPE::SUBRULE, {}, ' '};
 
-        rule r;
-        r.type = rule::TYPE::SUBRULE;
+        int rule_id = 0;
 
-        auto pos = tmp.find_first_of(": ");
-
-        int rule_num = std::stoi(tmp.substr(0, pos));
-
-        auto rest = tmp.substr(pos + 2);
-
-        if (rest[0] == '\"') {
+        if (std::regex_match(tmp, m, std::regex(R"((\d+): \"([a|b])\")"))) {
+            rule_id = std::stoi(m.str(1));
             r.type  = rule::TYPE::MATCH;
-            r.match = rest[1];
+            r.match = m.str(2)[0];
         }
-        else if (std::regex_match(rest, m, std::regex(R"((\d+) (\d+) \| (\d+) (\d+))"))) {
-            r.subrules.push_back(std::vector{std::stoi(m.str(1)), std::stoi(m.str(2))});
-            r.subrules.push_back(std::vector{std::stoi(m.str(3)), std::stoi(m.str(4))});
-        }
-        else if (std::regex_match(rest, m, std::regex(R"((\d+) \| (\d+))"))) {
-            r.subrules.push_back(std::vector{std::stoi(m.str(1))});
-            r.subrules.push_back(std::vector{std::stoi(m.str(2))});
-        }
-        else {
-            auto subrules = rest | rv::split(' ')
-                            | rv::transform([](auto&& s) { return std::stoi(s | rs::to<std::string>); })
-                            | rs::to_vector;
+        else if (std::regex_match(tmp, m, std::regex(R"((\d+):(.*))"))) {
+            rule_id = std::stoi(m.str(1));
+            tmp     = m.str(2);
 
-            r.subrules.push_back(subrules);
+            r.subrules = tmp | rv::split('|')
+                         | rv::transform([](auto&& s) { return s | rs::to<std::string>; })
+                         | rv::transform([](auto&& s) {
+                               return s | rv::trim([](char c) { return std::isspace(c); })
+                                      | rs::to<std::string>;
+                           })
+                         | rv::cache1 | rv::transform([](auto&& s) {
+                               return s | rv::split(' ') | rv::transform([](auto&& s) {
+                                          return std::stoi(s | rs::to<std::string>);
+                                      });
+                           })
+                         | rs::to<std::vector<std::vector<int>>>;
         }
 
-        rules.emplace(std::make_pair(rule_num, r));
+        rules.emplace(std::make_pair(rule_id, r));
     }
 
     return rules;
