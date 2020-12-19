@@ -11,8 +11,6 @@
 namespace rs = ranges;
 namespace rv = ranges::views;
 
-namespace day19 {
-
 struct rule {
     enum class TYPE { MATCH, SUBRULE };
 
@@ -22,20 +20,18 @@ struct rule {
     char                          match;
 };
 
-} // namespace day19
-
 auto read_rules(std::istream& input)
 {
-    std::string                          tmp;
-    std::unordered_map<int, day19::rule> rules;
+    std::string                   tmp;
+    std::unordered_map<int, rule> rules;
 
     while (std::getline(input, tmp)) {
         if (tmp == "") break;
 
         std::smatch m;
 
-        day19::rule r;
-        r.type = day19::rule::TYPE::SUBRULE;
+        rule r;
+        r.type = rule::TYPE::SUBRULE;
 
         auto pos = tmp.find_first_of(": ");
 
@@ -44,7 +40,7 @@ auto read_rules(std::istream& input)
         auto rest = tmp.substr(pos + 2);
 
         if (rest[0] == '\"') {
-            r.type  = day19::rule::TYPE::MATCH;
+            r.type  = rule::TYPE::MATCH;
             r.match = rest[1];
         }
         else if (std::regex_match(rest, m, std::regex(R"((\d+) (\d+) \| (\d+) (\d+))"))) {
@@ -79,13 +75,9 @@ auto read_input(std::istream&& input)
     return std::make_pair(std::move(rules), std::move(messages));
 }
 
-bool match(
-    const std::unordered_map<int, day19::rule>& rules,
-    const day19::rule&                          r,
-    const std::string&                          s,
-    int64_t&                                    idx)
+bool match(const std::unordered_map<int, rule>& rules, const rule& r, const std::string& s, int64_t& idx)
 {
-    if (r.type == day19::rule::TYPE::MATCH) { return s[idx++] == r.match; }
+    if (r.type == rule::TYPE::MATCH) { return s[idx++] == r.match; }
 
     return rs::any_of(r.subrules, [&rules, &s, &idx](const auto& sr) {
         int64_t tmp = idx;
@@ -103,28 +95,22 @@ bool match(
     });
 }
 
-bool match(const std::unordered_map<int, day19::rule>& rules, const day19::rule& r, const std::string& s)
+bool match(const std::unordered_map<int, rule>& rules, const rule& r, const std::string& s)
 {
     int64_t idx = 0;
     return match(rules, r, s, idx) && idx == static_cast<int64_t>(s.size());
 }
 
-int64_t
-part1(const std::unordered_map<int, day19::rule>& rules, const std::vector<std::string>& messages)
+int64_t part1(const std::unordered_map<int, rule>& rules, const std::vector<std::string>& messages)
 {
     return rs::distance(
         messages | rv::filter([&rules](const auto& s) { return match(rules, rules.at(0), s); }));
 }
 
-int64_t part2(std::unordered_map<int, day19::rule> rules, const std::vector<std::string>& messages)
+int64_t part2(std::unordered_map<int, rule> rules, const std::vector<std::string>& messages)
 {
-    day19::rule r8;
-    r8.type     = day19::rule::TYPE::SUBRULE;
-    r8.subrules = std::vector{std::vector{42}, std::vector{42, 8}};
-
-    day19::rule r11;
-    r11.type     = day19::rule::TYPE::SUBRULE;
-    r11.subrules = std::vector{std::vector{42, 31}, std::vector{42, 11, 31}};
+    rule r8{rule::TYPE::SUBRULE, std::vector{std::vector{42}, std::vector{42, 8}}, ' '};
+    rule r11{rule::TYPE::SUBRULE, std::vector{std::vector{42, 31}, std::vector{42, 11, 31}}, ' '};
 
     rules[8]  = r8;
     rules[11] = r11;
@@ -209,13 +195,8 @@ aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba)";
 
     auto [rules, messages] = read_input(std::move(ss));
 
-    day19::rule r8;
-    r8.type     = day19::rule::TYPE::SUBRULE;
-    r8.subrules = std::vector{std::vector{42}, std::vector{42, 8}};
-
-    day19::rule r11;
-    r11.type     = day19::rule::TYPE::SUBRULE;
-    r11.subrules = std::vector{std::vector{42, 31}, std::vector{42, 11, 31}};
+    rule r8{rule::TYPE::SUBRULE, std::vector{std::vector{42}, std::vector{42, 8}}, ' '};
+    rule r11{rule::TYPE::SUBRULE, std::vector{std::vector{42, 31}, std::vector{42, 11, 31}}, ' '};
 
     rules[8]  = r8;
     rules[11] = r11;
@@ -272,12 +253,12 @@ aaaabbb)";
     REQUIRE(6 == rules.size());
     REQUIRE(5 == messages.size());
 
-    REQUIRE(day19::rule::TYPE::SUBRULE == rules[0].type);
+    REQUIRE(rule::TYPE::SUBRULE == rules[0].type);
     REQUIRE(std::vector{4, 1, 5} == rules[0].subrules[0]);
     REQUIRE(std::vector{2, 3} == rules[1].subrules[0]);
     REQUIRE(std::vector{3, 2} == rules[1].subrules[1]);
 
-    REQUIRE(day19::rule::TYPE::MATCH == rules[4].type);
+    REQUIRE(rule::TYPE::MATCH == rules[4].type);
     REQUIRE('a' == rules[4].match);
 
     REQUIRE("bababa" == messages[1]);
