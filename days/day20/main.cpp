@@ -61,170 +61,38 @@ std::vector<char> right_side(const tile& t)
     return t.image_data | rv::transform([pos](auto&& t) { return t[pos]; }) | rs::to_vector;
 }
 
-/*
-bool set_neighbor(tile& t, tile& t2)
+bool is_top_neighbor(const tile& t1, const tile& t2)
 {
-    // compare top
-    if (rs::front(t.image_data) == rs::back(t2.image_data)) {
-        if (!t.bottom.contains(&t2)) {
-            t.top.insert(&t2);
-            t2.bottom.insert(&t);
-        }
-        return true;
-    }
-    // compare bottom
-    if (rs::back(t.image_data) == rs::front(t2.image_data)) {
-        if (!t.top.contains(&t2)) {
-            t.bottom.insert(&t2);
-            t2.top.insert(&t);
-        }
-        return true;
-    }
-
-    auto t_left  = left_side(t);
-    auto t_right = right_side(t);
-
-    auto t2_left  = left_side(t2);
-    auto t2_right = right_side(t2);
-
-    // compare left
-    if (t_left == t2_right) {
-        if (!t.right.contains(&t2)) {
-            t.left.insert(&t2);
-            t2.right.insert(&t);
-        }
-        return true;
-    }
-    // compare right
-    if (t_right == t2_left) {
-        if (!t.left.contains(&t2)) {
-            t.right.insert(&t2);
-            t2.left.insert(&t);
-        }
-        return true;
-    }
-
-    return false;
+    return rs::front(t1.image_data) == rs::back(t2.image_data);
 }
 
-void print_tile(const tile& t)
+bool is_bottom_neighbor(const tile& t1, const tile& t2)
 {
-    for (auto row : t.image_data) {
-        fmt::print("{}\n", fmt::join(row, ""));
-    }
+    return rs::back(t1.image_data) == rs::front(t2.image_data);
 }
 
-void set_neighbors(std::vector<tile>& tiles, tile& t)
+bool is_left_neighbor(const tile& t1, const tile& t2)
 {
-    for (auto& check_tile : tiles) {
-        if (t.id == check_tile.id) continue;
-
-        if (set_neighbor(t, check_tile)) { continue; }
-
-        // if (check_tile.morphed) continue;
-        check_tile.morphed = true;
-
-        check_tile.image_data = rotate_tile(check_tile.image_data);
-
-        if (set_neighbor(t, check_tile)) { continue; }
-
-        check_tile.image_data = rotate_tile(check_tile.image_data);
-
-        if (set_neighbor(t, check_tile)) { continue; }
-
-        check_tile.image_data = rotate_tile(check_tile.image_data);
-
-        if (set_neighbor(t, check_tile)) { continue; }
-
-        check_tile.image_data = flip(check_tile.image_data);
-
-        if (set_neighbor(t, check_tile)) { continue; }
-
-        check_tile.image_data = rotate_tile(check_tile.image_data);
-
-        if (set_neighbor(t, check_tile)) { continue; }
-
-        check_tile.image_data = rotate_tile(check_tile.image_data);
-
-        if (set_neighbor(t, check_tile)) { continue; }
-
-        check_tile.image_data = rotate_tile(check_tile.image_data);
-
-        if (set_neighbor(t, check_tile)) { continue; }
-
-        check_tile.morphed = false;
-    }
+    return left_side(t1) == right_side(t2);
 }
 
-const tile& find_topleft(const std::vector<tile>& tiles)
+bool is_right_neighbor(const tile& t1, const tile& t2)
 {
-    auto find_iter = rs::find_if(tiles, [](const auto& t) {
-        return t.right.size() > 0 && t.bottom.size() > 0 && t.top.size() == 0 && t.left.size() == 0;
-    });
-
-    return *find_iter;
+    return right_side(t1) == left_side(t2);
 }
-
-const tile& find_bottomleft(const std::vector<tile>& tiles)
-{
-    auto find_iter = rs::find_if(tiles, [](const auto& t) {
-        return t.right.size() > 0 && t.bottom.size() == 0 && t.top.size() > 0 && t.left.size() == 0;
-    });
-
-    return *find_iter;
-}
-
-const tile& find_topright(const std::vector<tile>& tiles)
-{
-    auto find_iter = rs::find_if(tiles, [](const auto& t) {
-        return t.right.size() == 0 && t.bottom.size() > 0 && t.top.size() == 0 && t.left.size() > 0;
-    });
-
-    return *find_iter;
-}
-
-const tile& find_bottomright(const std::vector<tile>& tiles)
-{
-    auto find_iter = rs::find_if(tiles, [](const auto& t) {
-        return t.right.size() == 0 && t.bottom.size() == 0 && t.top.size() > 0 && t.left.size() > 0;
-    });
-
-    return *find_iter;
-}
-
-std::vector<tile*> find_corners(std::vector<tile>& tiles)
-{
-    auto tmp = tiles;
-    for (auto& tile : tiles) {
-        set_neighbors(tmp, tile);
-
-        tmp = tiles;
-    }
-
-    return tiles | rv::filter([](const auto& t) {
-               return (t.top.size() > 0 ? 1 : 0) + (t.bottom.size() > 0 ? 1 : 0)
-                          + (t.left.size() > 0 ? 1 : 0) + (t.right.size() > 0 ? 1 : 0)
-                      == 2;
-           })
-           | rv::transform([](auto& t) { return &t; }) | rs::to_vector;
-}
-
-int64_t part1(std::vector<tile> tiles)
-{
-    auto corners = find_corners(tiles);
-
-    auto corner_ids = corners | rv::transform([](auto&& t) { return t->id; });
-
-    std::cout << corner_ids << std::endl;
-
-    return rs::accumulate(corner_ids, int64_t{1}, std::multiplies<>{});
-}
-*/
 
 bool is_neighbor(const tile& t1, tile& t2)
 {
-    // test at all sides and rotations/flip
-    (t1, t2);
+    for (int i : rv::iota(0, 8)) {
+        // test at all sides and rotations/flip
+        if (is_top_neighbor(t1, t2) || is_bottom_neighbor(t1, t2) || is_left_neighbor(t1, t2)
+            || is_right_neighbor(t1, t2)) {
+            return true;
+        }
+
+        t2.image_data = i % 4 == 0 ? flip(t2.image_data) : rotate_tile(t2.image_data);
+    }
+
     return false;
 }
 
@@ -238,13 +106,16 @@ std::vector<tile> find_neighbors(std::vector<tile> tiles, const tile& t)
     return neighbors;
 }
 
+auto build_neighbor_map(const std::vector<tile>& tiles)
+{
+    return tiles
+           | rv::transform([&tiles](auto&& t) { return std::make_pair(t.id, find_neighbors(tiles, t)); })
+           | rs::to<std::map<int64_t, std::vector<tile>>>;
+}
+
 int64_t part1(std::vector<tile> tiles)
 {
-    std::map<int64_t, std::vector<tile>> neighbor_map;
-
-    for (auto& t : tiles) {
-        neighbor_map.insert(std::make_pair(t.id, find_neighbors(tiles, t)));
-    }
+    auto neighbor_map = build_neighbor_map(tiles);
 
     return rs::accumulate(
         neighbor_map | rv::filter([](const auto& p) { return p.second.size() == 2; })
