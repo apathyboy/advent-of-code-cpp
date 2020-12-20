@@ -40,17 +40,15 @@ auto read_rules(std::istream& input)
             tmp  = m.str(2);
 
             r.subrules = tmp | rv::split('|')
-                         | rv::transform([](auto&& s) { return s | rs::to<std::string>; })
+                         | rv::transform([](auto&& s) { return s | rs::to<std::string>; }) | rv::cache1
                          | rv::transform([](auto&& s) {
                                return s | rv::trim([](uint8_t c) { return std::isspace(c); })
-                                      | rs::to<std::string>;
+                                      | rv::split(' ') | rv::transform([](auto&& s) {
+                                            return std::stoi(s | rs::to<std::string>);
+                                        })
+                                      | rs::to_vector;
                            })
-                         | rv::cache1 | rv::transform([](auto&& s) {
-                               return s | rv::split(' ') | rv::transform([](auto&& s) {
-                                          return std::stoi(s | rs::to<std::string>);
-                                      });
-                           })
-                         | rs::to<std::vector<std::vector<int>>>;
+                         | rs::to_vector;
         }
 
         rules.emplace(std::make_pair(r.id, r));
@@ -70,13 +68,13 @@ bool match(const std::unordered_map<int, rule>& rules, const rule& r, const std:
     if (r.type == rule::TYPE::MATCH) { return s[idx++] == r.match; }
 
     return rs::any_of(r.subrules, [&rules, &s, &idx, &r](const auto& sr) {
-        int64_t tmp          = idx;
-        bool    is_recursing = false;
-        if (!rs::all_of(sr | rv::enumerate, [&rules, &s, &idx, &r, &is_recursing](const auto& p) {
-                if (idx == static_cast<int64_t>(s.length())) return is_recursing;
+        int64_t tmp       = idx;
+        bool    recursing = false;
+        if (!rs::all_of(sr, [&rules, &s, &idx, &r, &recursing](const auto& rule_id) {
+                if (idx == static_cast<int64_t>(s.length())) return recursing;
 
-                auto next_rule = rules.at(p.second);
-                is_recursing   = r.id == next_rule.id;
+                auto next_rule = rules.at(rule_id);
+                recursing      = r.id == next_rule.id;
                 return match(rules, next_rule, s, idx);
             })) {
             idx = tmp;
