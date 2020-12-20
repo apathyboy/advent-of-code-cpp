@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include <iostream>
+#include <map>
 #include <set>
 
 namespace rs = ranges;
@@ -11,12 +12,7 @@ namespace rv = ranges::views;
 
 struct tile {
     int64_t                        id;
-    bool                           morphed = false;
     std::vector<std::vector<char>> image_data;
-    std::set<tile*>                top;
-    std::set<tile*>                bottom;
-    std::set<tile*>                left;
-    std::set<tile*>                right;
 };
 
 int parse_tile_id(const std::string& s)
@@ -30,7 +26,7 @@ std::vector<tile> read_input(std::istream&& input)
                auto v = rng | rv::transform([](auto&& s) { return s | rs::to<std::string>; })
                         | rs::to_vector;
 
-               tile t{parse_tile_id(v[0]), false, rv::tail(v) | rs::to<std::vector<std::vector<char>>>};
+               tile t{parse_tile_id(v[0]), rv::tail(v) | rs::to<std::vector<std::vector<char>>>};
 
                return t;
            })
@@ -65,6 +61,7 @@ std::vector<char> right_side(const tile& t)
     return t.image_data | rv::transform([pos](auto&& t) { return t[pos]; }) | rs::to_vector;
 }
 
+/*
 bool set_neighbor(tile& t, tile& t2)
 {
     // compare top
@@ -195,37 +192,70 @@ const tile& find_bottomright(const std::vector<tile>& tiles)
     return *find_iter;
 }
 
-int64_t part1(std::vector<tile> tiles)
+std::vector<tile*> find_corners(std::vector<tile>& tiles)
 {
+    auto tmp = tiles;
     for (auto& tile : tiles) {
-        set_neighbors(tiles, tile);
+        set_neighbors(tmp, tile);
+
+        tmp = tiles;
     }
 
-    auto corners = tiles | rv::filter([](const auto& t) {
-                       return t.top.size() + t.bottom.size() + t.left.size() + t.right.size() == 2;
-                   })
-                   | rv::transform([](auto&& t) { return t.id; });
-
-    std::cout << corners << std::endl;
-
-    return rs::accumulate(
-        tiles | rv::filter([](const auto& t) {
-            return t.top.size() + t.bottom.size() + t.left.size() + t.right.size() == 2;
-        }) | rv::transform([](auto&& t) { return t.id; }),
-        int64_t{1},
-        std::multiplies<>{});
-    /*
-        auto topleft     = find_topleft(tiles);
-        auto topright    = find_topright(tiles);
-        auto bottomleft  = find_bottomleft(tiles);
-        auto bottomright = find_bottomright(tiles);
-
-        return topleft.id * topright.id * bottomleft.id * bottomright.id;
-        */
+    return tiles | rv::filter([](const auto& t) {
+               return (t.top.size() > 0 ? 1 : 0) + (t.bottom.size() > 0 ? 1 : 0)
+                          + (t.left.size() > 0 ? 1 : 0) + (t.right.size() > 0 ? 1 : 0)
+                      == 2;
+           })
+           | rv::transform([](auto& t) { return &t; }) | rs::to_vector;
 }
 
-int64_t part2()
+int64_t part1(std::vector<tile> tiles)
 {
+    auto corners = find_corners(tiles);
+
+    auto corner_ids = corners | rv::transform([](auto&& t) { return t->id; });
+
+    std::cout << corner_ids << std::endl;
+
+    return rs::accumulate(corner_ids, int64_t{1}, std::multiplies<>{});
+}
+*/
+
+bool is_neighbor(const tile& t1, tile& t2)
+{
+    // test at all sides and rotations/flip
+    (t1, t2);
+    return false;
+}
+
+std::vector<tile> find_neighbors(std::vector<tile> tiles, const tile& t)
+{
+    std::vector<tile> neighbors;
+    for (auto check_tile : tiles) {
+        if (t.id == check_tile.id) continue;
+        if (is_neighbor(t, check_tile)) { neighbors.push_back(check_tile); }
+    }
+    return neighbors;
+}
+
+int64_t part1(std::vector<tile> tiles)
+{
+    std::map<int64_t, std::vector<tile>> neighbor_map;
+
+    for (auto& t : tiles) {
+        neighbor_map.insert(std::make_pair(t.id, find_neighbors(tiles, t)));
+    }
+
+    return rs::accumulate(
+        neighbor_map | rv::filter([](const auto& p) { return p.second.size() == 2; })
+            | rv::transform([](auto&& p) { return p.first; }),
+        int64_t{1},
+        std::multiplies<>{});
+}
+
+int64_t part2(std::vector<tile> tiles)
+{
+    (tiles);
     return 0;
 }
 
@@ -240,7 +270,7 @@ int main()
     auto input = read_input(std::ifstream{input_path});
 
     fmt::print("Part 1 Solution: {}\n", part1(input));
-    fmt::print("Part 2 Solution: {}\n", part2());
+    fmt::print("Part 2 Solution: {}\n", part2(input));
 
     return 0;
 }
@@ -469,16 +499,124 @@ Tile 3079:
 
     auto input = read_input(std::move(ss));
 
-    REQUIRE(0 == part1(input));
+    REQUIRE(20899048083289 == part1(input));
 }
 
 TEST_CASE("Can solve part 2 example")
 {
     std::stringstream ss;
 
-    ss << R"()";
+    ss << R"(Tile 2311:
+..##.#..#.
+##..#.....
+#...##..#.
+####.#...#
+##.##.###.
+##...#.###
+.#.#.#..##
+..#....#..
+###...#.#.
+..###..###
 
-    REQUIRE(0 == part2());
+Tile 1951:
+#.##...##.
+#.####...#
+.....#..##
+#...######
+.##.#....#
+.###.#####
+###.##.##.
+.###....#.
+..#.#..#.#
+#...##.#..
+
+Tile 1171:
+####...##.
+#..##.#..#
+##.#..#.#.
+.###.####.
+..###.####
+.##....##.
+.#...####.
+#.##.####.
+####..#...
+.....##...
+
+Tile 1427:
+###.##.#..
+.#..#.##..
+.#.##.#..#
+#.#.#.##.#
+....#...##
+...##..##.
+...#.#####
+.#.####.#.
+..#..###.#
+..##.#..#.
+
+Tile 1489:
+##.#.#....
+..##...#..
+.##..##...
+..#...#...
+#####...#.
+#..#.#.#.#
+...#.#.#..
+##.#...##.
+..##.##.##
+###.##.#..
+
+Tile 2473:
+#....####.
+#..#.##...
+#.##..#...
+######.#.#
+.#...#.#.#
+.#########
+.###.#..#.
+########.#
+##...##.#.
+..###.#.#.
+
+Tile 2971:
+..#.#....#
+#...###...
+#.#.###...
+##.##..#..
+.#####..##
+.#..####.#
+#..#.#..#.
+..####.###
+..#.#.###.
+...#.#.#.#
+
+Tile 2729:
+...#.#.#.#
+####.#....
+..#.#.....
+....#..#.#
+.##..##.#.
+.#.####...
+####.#.#..
+##.####...
+##..#.##..
+#.##...##.
+
+Tile 3079:
+#.#.#####.
+.#..######
+..#.......
+######....
+####.#..#.
+.#...#.##.
+#.#####.##
+..#.###...
+..#.......
+..#.###...)";
+
+    auto input = read_input(std::move(ss));
+
+    REQUIRE(0 == part2(input));
 }
 
 #endif
