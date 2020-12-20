@@ -52,13 +52,12 @@ auto flip(const std::vector<std::vector<T>>& grid)
 
 std::vector<char> left_side(const tile& t)
 {
-    return t.image_data | rv::transform([](auto&& t) { return t[0]; }) | rs::to_vector;
+    return t.image_data | rv::transform([](auto&& t) { return rs::front(t); }) | rs::to_vector;
 }
 
 std::vector<char> right_side(const tile& t)
 {
-    int pos = static_cast<int>(t.image_data[0].size() - 1);
-    return t.image_data | rv::transform([pos](auto&& t) { return t[pos]; }) | rs::to_vector;
+    return t.image_data | rv::transform([](auto&& t) { return rs::back(t); }) | rs::to_vector;
 }
 
 bool is_top_neighbor(const tile& t1, const tile& t2)
