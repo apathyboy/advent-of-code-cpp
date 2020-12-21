@@ -47,18 +47,6 @@ std::vector<food> read_input(std::istream&& input)
            | rs::to_vector;
 }
 
-std::optional<food>
-find_single_allergen_food(const std::vector<food>& food_list, std::string search_allergen)
-{
-    auto find_iter = rs::find_if(food_list, [&search_allergen](const auto& f) {
-        return f.allergens.size() == 1 && f.allergens[0] == search_allergen;
-    });
-
-    if (find_iter == rs::end(food_list)) { return {}; }
-
-    return *find_iter;
-}
-
 std::vector<food>
 find_food_with_allergen(const std::vector<food>& food_list, const std::string& search_allergen)
 {
@@ -68,121 +56,58 @@ find_food_with_allergen(const std::vector<food>& food_list, const std::string& s
            | rs::to_vector;
 }
 
-auto create_allergen_map(const std::vector<food>& food_list)
-{
-    auto unique_allergens = food_list | rv::transform([](auto&& f) { return f.allergens; }) | ra::join
-                            | ra::sort | ra::unique;
-
-    return unique_allergens
-           | rv::transform([](auto&& s) { return std::make_pair(s, std::optional<std::string>{}); })
-           | rs::to<std::map<std::string, std::optional<std::string>>>;
-}
-
-auto count_all_non_allergen_ingredients(
-    const std::vector<food>&                       food_list,
-    const std::vector<std::optional<std::string>>& with_allergens)
+int64_t count_all_non_allergen_ingredients(
+    const std::vector<food>&        food_list,
+    const std::vector<std::string>& with_allergens)
 {
     auto all_ingredients = food_list | rv::transform([](auto&& f) { return f.ingredients; }) | ra::join
                            | ra::sort;
 
     auto no_allergens = all_ingredients | rv::filter([&with_allergens](auto&& i) {
-                            return rs::none_of(with_allergens, [&i](auto ai) {
-                                return ai.value() == i;
-                            });
+                            return rs::none_of(with_allergens, [&i](auto ai) { return ai == i; });
                         });
 
     return rs::distance(no_allergens);
 }
 
-int64_t part1_2(std::vector<food> food_list)
+auto build_allergen_potentials(const std::vector<food>& food_list)
 {
-    auto allergens = create_allergen_map(food_list);
+    std::map<std::string, std::set<std::string>> allergen_potentials;
 
-    while (rs::any_of(allergens, [](auto&& p) { return !p.second; })) {
-        for (auto& check_food : food_list) {
-            for (auto allergen : check_food.allergens) {
-                if (allergens.at(allergen).has_value()) continue;
-                auto food_with_allergen = find_food_with_allergen(food_list, allergen);
+    for (auto& check_food : food_list) {
+        for (auto allergen : check_food.allergens) {
+            auto food_with_allergen = find_food_with_allergen(food_list, allergen);
 
-                for (auto& allergen_food : food_with_allergen) {
-                    auto allergen_food_ingredients = rv::set_difference(
-                        allergen_food.ingredients,
-                        allergens | rv::values | rv::filter([](const auto& p) { return p.has_value(); })
-                            | rv::transform([](auto&& p) { return p.value(); }));
+            auto potentials = check_food.ingredients;
 
-                    auto match = rv::set_intersection(check_food.ingredients, allergen_food_ingredients);
+            for (const auto& allergen_food : food_with_allergen) {
+                potentials = rv::set_intersection(potentials, allergen_food.ingredients) | rs::to_vector;
+            }
 
-                    if (rs::distance(match) == 1) {
-                        allergens[allergen] = rs::front(match);
-                        break;
-                    }
-                }
+            for (auto p : potentials) {
+                allergen_potentials[allergen].insert(p);
             }
         }
     }
 
-    return count_all_non_allergen_ingredients(food_list, allergens | rv::values | rs::to_vector);
+    return allergen_potentials;
 }
 
 int64_t part1(std::vector<food> food_list)
 {
-    std::map<std::string, std::string> known_allergens;
+    auto allergen_potentials = build_allergen_potentials(food_list);
 
-    for (auto check_food : food_list | rv::filter([](auto&& f) { return f.allergens.size() > 1; })) {
-        for (auto check_allergen : check_food.allergens) {
-            auto allergen_food = find_single_allergen_food(food_list, check_allergen);
+    auto allergens = allergen_potentials | rv::transform([](auto&& p) { return rv::all(p.second); })
+                     | rv::join | rs::to_vector | ra::sort | ra::unique;
 
-            if (!allergen_food) continue;
+    fmt::print("[{}]\n", fmt::join(allergens, ", "));
 
-            auto allergen_food_ingredients = rv::set_difference(
-                allergen_food->ingredients,
-                known_allergens | rv::values);
-
-            auto match = rv::set_intersection(check_food.ingredients, allergen_food_ingredients);
-
-            if (rs::distance(match) == 1) {
-
-                auto ingredient = rs::front(match);
-
-                known_allergens.insert(std::make_pair(check_allergen, ingredient));
-            }
-        }
-    }
-
-    for (auto check_food : food_list) {
-        auto unknown_allergens = rv::set_difference(check_food.allergens, known_allergens | rv::keys);
-
-        if (rs::distance(unknown_allergens) == 0) continue;
-
-        auto remaining_ingredients = rv::set_difference(
-            check_food.ingredients,
-            known_allergens | rv::values);
-
-        if (rs::distance(remaining_ingredients) == 1 && rs::distance(unknown_allergens) == 1) {
-            known_allergens.insert(
-                std::make_pair(rs::front(unknown_allergens), rs::front(remaining_ingredients)));
-        }
-    }
-
-    auto all_ingredients = food_list | rv::transform([](auto&& f) { return f.ingredients; }) | ra::join
-                           | ra::sort;
-
-    auto all_allergen_ingredients = known_allergens | rv::transform([](auto& p) { return p.second; })
-                                    | rs::to_vector | ra::sort;
-
-    auto no_allergens = all_ingredients | rv::filter([&all_allergen_ingredients](auto&& i) {
-                            return rs::none_of(all_allergen_ingredients, [&i](auto ai) {
-                                return ai == i;
-                            });
-                        })
-                        | rs::to_vector;
-
-    return rs::distance(no_allergens);
+    return count_all_non_allergen_ingredients(food_list, allergens);
 }
 
-int64_t part2()
+std::string part2(std::vector<food> food_list)
 {
-    return 0;
+    return "";
 }
 
 #ifndef UNIT_TESTING
@@ -195,8 +120,8 @@ int main()
 
     auto food_list = read_input(std::ifstream{input_path});
 
-    fmt::print("Part 1 Solution: {}\n", part1_2(food_list));
-    fmt::print("Part 2 Solution: {}\n", part2());
+    fmt::print("Part 1 Solution: {}\n", part1(food_list));
+    fmt::print("Part 2 Solution: {}\n", part2(food_list));
 
     return 0;
 }
@@ -241,9 +166,14 @@ TEST_CASE("Can solve part 2 example")
 {
     std::stringstream ss;
 
-    ss << R"()";
+    ss << R"(mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
+trh fvjkl sbzzf mxmxvkd (contains dairy)
+sqjhc fvjkl (contains soy)
+sqjhc mxmxvkd sbzzf (contains fish))";
 
-    REQUIRE(0 == part2());
+    auto food_list = read_input(std::move(ss));
+
+    REQUIRE(std::string{"mxmxvkd,sqjhc,fvjkl"} == part2(food_list));
 }
 
 #endif
