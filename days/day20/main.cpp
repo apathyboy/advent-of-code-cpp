@@ -15,6 +15,10 @@ struct tile {
     std::vector<std::vector<char>> image_data;
 };
 
+struct tile_compare {
+    bool operator()(const tile& lhs, const tile& rhs) const { return lhs.id < rhs.id; }
+};
+
 int parse_tile_id(const std::string& s)
 {
     return std::stoi(s.substr(5, s.length() - 1));
@@ -108,8 +112,52 @@ std::vector<tile> find_neighbors(std::vector<tile> tiles, const tile& t)
 auto build_neighbor_map(const std::vector<tile>& tiles)
 {
     return tiles
-           | rv::transform([&tiles](auto&& t) { return std::make_pair(t.id, find_neighbors(tiles, t)); })
-           | rs::to<std::map<int64_t, std::vector<tile>>>;
+           | rv::transform([&tiles](auto&& t) { return std::make_pair(t, find_neighbors(tiles, t)); })
+           | rs::to<std::map<tile, std::vector<tile>, tile_compare>>;
+}
+
+std::vector<tile> place_tiles(const std::map<tile, std::vector<tile>, tile_compare>& all_neighbors)
+{
+    std::vector<tile> image;
+
+    int row    = 0;
+    int column = 0;
+
+    auto first_corner = rs::find_if(all_neighbors, [](const auto& p) { return p.second.size() == 2; });
+
+    image.push_back(first_corner->first);
+
+    auto last     = image.back();
+    auto neighbor = first_corner->second[0];
+
+    bool found_top_left_corner = false;
+
+    for (int i : rv::iota(0, 8)) {
+        // test at all sides and rotations/flip
+        if (is_right_neighbor(last, neighbor)) {
+            found_top_left_corner = true;
+            image.push_back(neighbor);
+            break;
+        }
+
+        for (int j : rv::iota(0, 8)) {
+            // test at all sides and rotations/flip
+            if (is_right_neighbor(last, neighbor)) {
+                found_top_left_corner = true;
+                image.push_back(neighbor);
+                break;
+            }
+
+            neighbor.image_data = j % 4 == 0 ? flip(neighbor.image_data)
+                                             : rotate_tile(neighbor.image_data);
+        }
+
+        if (found_top_left_corner) { break; }
+
+        last.image_data = i % 4 == 0 ? flip(last.image_data) : rotate_tile(last.image_data);
+    }
+
+    return image;
 }
 
 int64_t part1(std::vector<tile> tiles)
@@ -118,14 +166,17 @@ int64_t part1(std::vector<tile> tiles)
 
     return rs::accumulate(
         neighbor_map | rv::filter([](const auto& p) { return p.second.size() == 2; })
-            | rv::transform([](auto&& p) { return p.first; }),
+            | rv::transform([](auto&& p) { return p.first.id; }),
         int64_t{1},
         std::multiplies<>{});
 }
 
 int64_t part2(std::vector<tile> tiles)
 {
-    (tiles);
+    auto all_neighbors = build_neighbor_map(tiles);
+
+    auto image_tiles = place_tiles(all_neighbors);
+
     return 0;
 }
 
