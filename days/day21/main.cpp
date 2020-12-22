@@ -100,14 +100,27 @@ int64_t part1(std::vector<food> food_list)
     auto allergens = allergen_potentials | rv::transform([](auto&& p) { return rv::all(p.second); })
                      | rv::join | rs::to_vector | ra::sort | ra::unique;
 
-    fmt::print("[{}]\n", fmt::join(allergens, ", "));
-
     return count_all_non_allergen_ingredients(food_list, allergens);
 }
 
 std::string part2(std::vector<food> food_list)
 {
-    return "";
+    auto allergen_potentials = build_allergen_potentials(food_list);
+
+    for (auto& allergen : allergen_potentials) {
+        for (auto& test_allergen : allergen_potentials) {
+            if (test_allergen.first == allergen.first) continue;
+            if (allergen.second.size() == 1) break;
+
+            allergen.second = rv::set_difference(allergen.second, test_allergen.second)
+                              | rs::to<std::set<std::string>>;
+        }
+    }
+
+    auto allergens = allergen_potentials | rv::transform([](auto&& p) { return rs::front(p.second); })
+                     | rs::to_vector;
+
+    return allergens | rv::join(',') | rs::to<std::string>;
 }
 
 #ifndef UNIT_TESTING
