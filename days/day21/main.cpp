@@ -70,7 +70,7 @@ int64_t count_all_non_allergen_ingredients(
     return rs::distance(no_allergens);
 }
 
-auto build_allergen_potentials(const std::vector<food>& food_list)
+auto build_allergen_map(const std::vector<food>& food_list)
 {
     std::map<std::string, std::set<std::string>> allergen_potentials;
 
@@ -90,23 +90,6 @@ auto build_allergen_potentials(const std::vector<food>& food_list)
         }
     }
 
-    return allergen_potentials;
-}
-
-int64_t part1(std::vector<food> food_list)
-{
-    auto allergen_potentials = build_allergen_potentials(food_list);
-
-    auto allergens = allergen_potentials | rv::transform([](auto&& p) { return rv::all(p.second); })
-                     | rv::join | rs::to_vector | ra::sort | ra::unique;
-
-    return count_all_non_allergen_ingredients(food_list, allergens);
-}
-
-std::string part2(std::vector<food> food_list)
-{
-    auto allergen_potentials = build_allergen_potentials(food_list);
-
     for (auto& allergen : allergen_potentials) {
         for (auto& test_allergen : allergen_potentials) {
             if (test_allergen.first == allergen.first) continue;
@@ -116,6 +99,23 @@ std::string part2(std::vector<food> food_list)
                               | rs::to<std::set<std::string>>;
         }
     }
+
+    return allergen_potentials;
+}
+
+int64_t part1(std::vector<food> food_list)
+{
+    auto allergen_potentials = build_allergen_map(food_list);
+
+    auto allergens = allergen_potentials | rv::transform([](auto&& p) { return rs::front(p.second); })
+                     | rs::to_vector;
+
+    return count_all_non_allergen_ingredients(food_list, allergens);
+}
+
+std::string part2(std::vector<food> food_list)
+{
+    auto allergen_potentials = build_allergen_map(food_list);
 
     auto allergens = allergen_potentials | rv::transform([](auto&& p) { return rs::front(p.second); })
                      | rs::to_vector;
