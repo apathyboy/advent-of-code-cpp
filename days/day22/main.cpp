@@ -29,36 +29,41 @@ int calculate_deck_score(const std::deque<int>& deck)
         0);
 }
 
-bool winner_detected(const std::vector<std::deque<int>>& decks)
+bool is_game_won(const std::vector<std::deque<int>>& decks)
 {
     return rs::any_of(decks, [](const auto& deck) { return deck.size() == 0; });
 }
 
+int draw_card(std::deque<int>& deck)
+{
+    int card = deck.front();
+    deck.pop_front();
+    return card;
+}
+
 std::deque<int> play_combat(std::vector<std::deque<int>> decks)
 {
+    int round_winner = 0;
+
     do {
-        auto p1 = decks[0].front();
-        decks[0].pop_front();
+        auto p1 = draw_card(decks[0]);
+        auto p2 = draw_card(decks[1]);
 
-        auto p2 = decks[1].front();
-        decks[1].pop_front();
+        round_winner = (p1 > p2) ? 0 : 1;
 
-        if (p1 > p2) {
-            decks[0].push_back(p1);
-            decks[0].push_back(p2);
-        }
-        else {
-            decks[1].push_back(p2);
-            decks[1].push_back(p1);
-        }
-    } while (!winner_detected(decks));
+        decks[round_winner].insert(
+            decks[round_winner].end(),
+            {round_winner == 0 ? p1 : p2, round_winner == 0 ? p2 : p1});
+    } while (!is_game_won(decks));
 
-    return decks[decks[0].size() == 0 ? 1 : 0];
+    return decks[round_winner];
 }
 
 std::pair<int, std::deque<int>> play_recursive_combat(std::vector<std::deque<int>> decks)
 {
     std::vector<std::vector<std::deque<int>>> previous_states;
+
+    int round_winner = 0;
 
     do {
         if (rs::any_of(previous_states, [&decks](const auto& state) { return state == decks; })) {
@@ -67,38 +72,26 @@ std::pair<int, std::deque<int>> play_recursive_combat(std::vector<std::deque<int
 
         previous_states.push_back(decks);
 
-        auto p1 = decks[0].front();
-        decks[0].pop_front();
-
-        auto p2 = decks[1].front();
-        decks[1].pop_front();
-
-        int winner = 0;
+        auto p1 = draw_card(decks[0]);
+        auto p2 = draw_card(decks[1]);
 
         if (p1 <= decks[0].size() && p2 <= decks[1].size()) {
             std::vector<std::deque<int>> subgame_decks{
                 decks[0] | rv::take(p1) | rs::to<std::deque>,
                 decks[1] | rv::take(p2) | rs::to<std::deque>};
 
-            winner = play_recursive_combat(subgame_decks).first;
+            round_winner = play_recursive_combat(subgame_decks).first;
         }
         else {
-            winner = (p1 > p2) ? 0 : 1;
+            round_winner = (p1 > p2) ? 0 : 1;
         }
 
-        if (winner == 0) {
-            decks[0].push_back(p1);
-            decks[0].push_back(p2);
-        }
-        else {
-            decks[1].push_back(p2);
-            decks[1].push_back(p1);
-        }
-    } while (!winner_detected(decks));
+        decks[round_winner].insert(
+            decks[round_winner].end(),
+            {round_winner == 0 ? p1 : p2, round_winner == 0 ? p2 : p1});
+    } while (!is_game_won(decks));
 
-    int winner = decks[0].size() == 0 ? 1 : 0;
-
-    return std::make_pair(winner, decks[winner]);
+    return std::make_pair(round_winner, decks[round_winner]);
 }
 
 int64_t part1(std::vector<std::deque<int>> decks)
