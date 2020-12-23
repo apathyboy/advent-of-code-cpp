@@ -34,26 +34,9 @@ bool winner_detected(const std::vector<std::deque<int>>& decks)
     return rs::any_of(decks, [](const auto& deck) { return deck.size() == 0; });
 }
 
-std::optional<std::deque<int>> find_winner(const std::vector<std::deque<int>>& decks)
+std::deque<int> play_combat(std::vector<std::deque<int>> decks)
 {
-    std::optional<std::deque<int>> winner;
-
-    auto winners = decks | rv::filter([](const auto& deck) { return deck.size() > 0; });
-
-    if (rs::distance(winners) > 0) { winner = rs::front(winners); }
-
-    return winner;
-}
-
-int64_t part1(std::vector<std::deque<int>> decks)
-{
-    std::optional<std::deque<int>> winner;
-
-    int round = 0;
-
     do {
-        ++round;
-
         auto p1 = decks[0].front();
         decks[0].pop_front();
 
@@ -68,16 +51,64 @@ int64_t part1(std::vector<std::deque<int>> decks)
             decks[1].push_back(p2);
             decks[1].push_back(p1);
         }
-
-        winner = find_winner(decks);
     } while (!winner_detected(decks));
 
-    return calculate_deck_score(winner.value());
+    return decks[decks[0].size() == 0 ? 1 : 0];
 }
 
-int64_t part2()
+std::pair<int, std::deque<int>> play_recursive_combat(std::vector<std::deque<int>> decks)
 {
-    return 0;
+    std::vector<std::vector<std::deque<int>>> previous_states;
+
+    do {
+        if (rs::any_of(previous_states, [&decks](const auto& state) { return state == decks; })) {
+            return std::make_pair(0, decks[0]);
+        }
+
+        previous_states.push_back(decks);
+
+        auto p1 = decks[0].front();
+        decks[0].pop_front();
+
+        auto p2 = decks[1].front();
+        decks[1].pop_front();
+
+        int winner = 0;
+
+        if (p1 <= decks[0].size() && p2 <= decks[1].size()) {
+            std::vector<std::deque<int>> subgame_decks{
+                decks[0] | rv::take(p1) | rs::to<std::deque>,
+                decks[1] | rv::take(p2) | rs::to<std::deque>};
+
+            winner = play_recursive_combat(subgame_decks).first;
+        }
+        else {
+            winner = (p1 > p2) ? 0 : 1;
+        }
+
+        if (winner == 0) {
+            decks[0].push_back(p1);
+            decks[0].push_back(p2);
+        }
+        else {
+            decks[1].push_back(p2);
+            decks[1].push_back(p1);
+        }
+    } while (!winner_detected(decks));
+
+    int winner = decks[0].size() == 0 ? 1 : 0;
+
+    return std::make_pair(winner, decks[winner]);
+}
+
+int64_t part1(std::vector<std::deque<int>> decks)
+{
+    return calculate_deck_score(play_combat(decks));
+}
+
+int64_t part2(std::vector<std::deque<int>> decks)
+{
+    return calculate_deck_score(play_recursive_combat(decks).second);
 }
 
 #ifndef UNIT_TESTING
@@ -91,7 +122,7 @@ int main()
     auto decks = read_starting_decks(std::ifstream{input_path});
 
     fmt::print("Part 1 Solution: {}\n", part1(decks));
-    fmt::print("Part 2 Solution: {}\n", part2());
+    fmt::print("Part 2 Solution: {}\n", part2(decks));
 
     return 0;
 }
@@ -136,9 +167,23 @@ TEST_CASE("Can solve part 2 example")
 {
     std::stringstream ss;
 
-    ss << R"()";
+    ss << R"(Player 1:
+9
+2
+6
+3
+1
 
-    REQUIRE(0 == part2());
+Player 2:
+5
+8
+4
+7
+10)";
+
+    auto decks = read_starting_decks(std::move(ss));
+
+    REQUIRE(291 == part2(decks));
 }
 
 #endif
