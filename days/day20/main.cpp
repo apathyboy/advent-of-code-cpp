@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <map>
+#include <optional>
 #include <set>
 
 namespace rs = ranges;
@@ -116,35 +117,36 @@ auto build_neighbor_map(const std::vector<tile>& tiles)
            | rs::to<std::map<tile, std::vector<tile>, tile_compare>>;
 }
 
-std::vector<tile> place_tiles(const std::map<tile, std::vector<tile>, tile_compare>& all_neighbors)
+std::vector<std::optional<tile>>
+place_top_left(const std::map<tile, std::vector<tile>, tile_compare>& all_neighbors, int width)
 {
-    std::vector<tile> image;
+    std::vector<std::optional<tile>> image;
+    image.resize(all_neighbors.size());
 
     int row    = 0;
     int column = 0;
 
     auto first_corner = rs::find_if(all_neighbors, [](const auto& p) { return p.second.size() == 2; });
 
-    image.push_back(first_corner->first);
+    image[(row * width) + column] = first_corner->first;
 
-    auto last     = image.back();
     auto neighbor = first_corner->second[0];
 
     bool found_top_left_corner = false;
 
     for (int i : rv::iota(0, 8)) {
         // test at all sides and rotations/flip
-        if (is_right_neighbor(last, neighbor)) {
-            found_top_left_corner = true;
-            image.push_back(neighbor);
+        if (is_right_neighbor(*image[(row * width) + column], neighbor)) {
+            found_top_left_corner             = true;
+            image[(row * width) + column + 1] = neighbor;
             break;
         }
 
         for (int j : rv::iota(0, 8)) {
             // test at all sides and rotations/flip
-            if (is_right_neighbor(last, neighbor)) {
-                found_top_left_corner = true;
-                image.push_back(neighbor);
+            if (is_right_neighbor(*image[(row * width) + column], neighbor)) {
+                found_top_left_corner             = true;
+                image[(row * width) + column + 1] = neighbor;
                 break;
             }
 
@@ -154,16 +156,104 @@ std::vector<tile> place_tiles(const std::map<tile, std::vector<tile>, tile_compa
 
         if (found_top_left_corner) { break; }
 
-        last.image_data = i % 4 == 0 ? flip(last.image_data) : rotate_tile(last.image_data);
+        image[(row * width) + column]->image_data = i % 4 == 0
+                                                        ? flip(image[(row * width) + column]->image_data)
+                                                        : rotate_tile(
+                                                            image[(row * width) + column]->image_data);
+    }
+
+    neighbor = first_corner->second[1];
+
+    for (int i : rv::iota(0, 2)) {
+        (i);
+        for (int j : rv::iota(0, 8)) {
+            // test at all sides and rotations/flip
+            if (is_bottom_neighbor(*image[(row * width) + column], neighbor)) {
+                image[((row + 1) * width) + column] = neighbor;
+                break;
+            }
+
+            neighbor.image_data = j % 4 == 0 ? flip(neighbor.image_data)
+                                             : rotate_tile(neighbor.image_data);
+        }
+
+        image[(row * width) + column]->image_data = flip(image[(row * width) + column]->image_data);
+        image[(row * width) + column]->image_data = rotate_tile(
+            image[(row * width) + column]->image_data);
+        image[(row * width) + column]->image_data = rotate_tile(
+            image[(row * width) + column]->image_data);
+        image[(row * width) + column + 1]->image_data = flip(
+            image[(row * width) + column + 1]->image_data);
+        image[(row * width) + column + 1]->image_data = rotate_tile(
+            image[(row * width) + column + 1]->image_data);
+        image[(row * width) + column + 1]->image_data = rotate_tile(
+            image[(row * width) + column + 1]->image_data);
     }
 
     return image;
 }
 
-int64_t part1(std::vector<tile> tiles)
+std::optional<tile> find_right_neighbor(const std::vector<tile>& neighbors, const tile& t)
 {
-    auto neighbor_map = build_neighbor_map(tiles);
+    for (auto neighbor : neighbors) {
+        for (int j : rv::iota(0, 8)) {
+            // test at all sides and rotations/flip
+            if (is_right_neighbor(t, neighbor)) { return neighbor; }
 
+            neighbor.image_data = j % 4 == 0 ? flip(neighbor.image_data)
+                                             : rotate_tile(neighbor.image_data);
+        }
+    }
+
+    return {};
+}
+
+std::optional<tile> find_bottom_neighbor(const std::vector<tile>& neighbors, const tile& t)
+{
+    for (auto neighbor : neighbors) {
+        for (int j : rv::iota(0, 8)) {
+            // test at all sides and rotations/flip
+            if (is_bottom_neighbor(t, neighbor)) { return neighbor; }
+
+            neighbor.image_data = j % 4 == 0 ? flip(neighbor.image_data)
+                                             : rotate_tile(neighbor.image_data);
+        }
+    }
+
+    return {};
+}
+
+std::vector<std::optional<tile>>
+place_tiles(const std::map<tile, std::vector<tile>, tile_compare>& all_neighbors, int width)
+{
+    auto image_tiles = place_top_left(all_neighbors, width);
+
+    for (int row = 0; row < width; ++row) {
+        for (int column = 0; column < width; ++column) {
+            // place right_side
+            if (column + 1 < width && !image_tiles[(row * width) + column + 1]) {
+                auto right_neighbor = find_right_neighbor(
+                    all_neighbors.at(*image_tiles[(row * width) + column]),
+                    *image_tiles[(row * width) + column]);
+                if (right_neighbor) { image_tiles[(row * width) + column + 1] = right_neighbor.value(); }
+            }
+            // place bottom_side
+            if (row + 1 < width && !image_tiles[((row + 1) * width) + column]) {
+                auto bottom_neighbor = find_bottom_neighbor(
+                    all_neighbors.at(*image_tiles[(row * width) + column]),
+                    *image_tiles[(row * width) + column]);
+                if (bottom_neighbor) {
+                    image_tiles[((row + 1) * width) + column] = bottom_neighbor.value();
+                }
+            }
+        }
+    }
+
+    return image_tiles;
+}
+
+int64_t part1(std::map<tile, std::vector<tile>, tile_compare> neighbor_map)
+{
     return rs::accumulate(
         neighbor_map | rv::filter([](const auto& p) { return p.second.size() == 2; })
             | rv::transform([](auto&& p) { return p.first.id; }),
@@ -171,11 +261,9 @@ int64_t part1(std::vector<tile> tiles)
         std::multiplies<>{});
 }
 
-int64_t part2(std::vector<tile> tiles)
+int64_t part2(std::map<tile, std::vector<tile>, tile_compare> neighbor_map, int width)
 {
-    auto all_neighbors = build_neighbor_map(tiles);
-
-    auto image_tiles = place_tiles(all_neighbors);
+    auto image_tiles = place_tiles(neighbor_map, width);
 
     return 0;
 }
@@ -186,12 +274,13 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 20\n");
 
-    std::string input_path = "days/day20/example.in";
+    std::string input_path = "days/day20/puzzle.in";
 
-    auto input = read_input(std::ifstream{input_path});
+    auto input        = read_input(std::ifstream{input_path});
+    auto neighbor_map = build_neighbor_map(input);
 
-    fmt::print("Part 1 Solution: {}\n", part1(input));
-    fmt::print("Part 2 Solution: {}\n", part2(input));
+    fmt::print("Part 1 Solution: {}\n", part1(neighbor_map));
+    fmt::print("Part 2 Solution: {}\n", part2(neighbor_map, 12));
 
     return 0;
 }
@@ -418,9 +507,10 @@ Tile 3079:
 ..#.......
 ..#.###...)";
 
-    auto input = read_input(std::move(ss));
+    auto input        = read_input(std::move(ss));
+    auto neighbor_map = build_neighbor_map(input);
 
-    REQUIRE(20899048083289 == part1(input));
+    REQUIRE(20899048083289 == part1(neighbor_map));
 }
 
 TEST_CASE("Can solve part 2 example")
@@ -535,9 +625,10 @@ Tile 3079:
 ..#.......
 ..#.###...)";
 
-    auto input = read_input(std::move(ss));
+    auto input        = read_input(std::move(ss));
+    auto neighbor_map = build_neighbor_map(input);
 
-    REQUIRE(0 == part2(input));
+    REQUIRE(0 == part2(neighbor_map, 3));
 }
 
 #endif
