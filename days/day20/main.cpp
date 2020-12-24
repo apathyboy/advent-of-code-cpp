@@ -132,12 +132,13 @@ place_top_left(const std::map<tile, std::vector<tile>, tile_compare>& all_neighb
 
     auto neighbor = first_corner->second[0];
 
-    bool found_top_left_corner = false;
+    bool found_top_left_right_neighbor  = false;
+    bool found_top_left_bottom_neighbor = false;
 
     for (int i : rv::iota(0, 8)) {
         // test at all sides and rotations/flip
         if (is_right_neighbor(*image[(row * width) + column], neighbor)) {
-            found_top_left_corner             = true;
+            found_top_left_right_neighbor     = true;
             image[(row * width) + column + 1] = neighbor;
             break;
         }
@@ -145,7 +146,7 @@ place_top_left(const std::map<tile, std::vector<tile>, tile_compare>& all_neighb
         for (int j : rv::iota(0, 8)) {
             // test at all sides and rotations/flip
             if (is_right_neighbor(*image[(row * width) + column], neighbor)) {
-                found_top_left_corner             = true;
+                found_top_left_right_neighbor     = true;
                 image[(row * width) + column + 1] = neighbor;
                 break;
             }
@@ -154,7 +155,7 @@ place_top_left(const std::map<tile, std::vector<tile>, tile_compare>& all_neighb
                                              : rotate_tile(neighbor.image_data);
         }
 
-        if (found_top_left_corner) { break; }
+        if (found_top_left_right_neighbor) { break; }
 
         image[(row * width) + column]->image_data = i % 4 == 0
                                                         ? flip(image[(row * width) + column]->image_data)
@@ -165,10 +166,10 @@ place_top_left(const std::map<tile, std::vector<tile>, tile_compare>& all_neighb
     neighbor = first_corner->second[1];
 
     for (int i : rv::iota(0, 2)) {
-        (i);
         for (int j : rv::iota(0, 8)) {
             // test at all sides and rotations/flip
             if (is_bottom_neighbor(*image[(row * width) + column], neighbor)) {
+                found_top_left_bottom_neighbor      = true;
                 image[((row + 1) * width) + column] = neighbor;
                 break;
             }
@@ -176,6 +177,8 @@ place_top_left(const std::map<tile, std::vector<tile>, tile_compare>& all_neighb
             neighbor.image_data = j % 4 == 0 ? flip(neighbor.image_data)
                                              : rotate_tile(neighbor.image_data);
         }
+
+        if (found_top_left_bottom_neighbor) break;
 
         image[(row * width) + column]->image_data = flip(image[(row * width) + column]->image_data);
         image[(row * width) + column]->image_data = rotate_tile(
@@ -252,6 +255,44 @@ place_tiles(const std::map<tile, std::vector<tile>, tile_compare>& all_neighbors
     return image_tiles;
 }
 
+tile remove_borders(tile t)
+{
+    t.image_data = (t.image_data | rv::tail) | rv::drop_last(1) | rv::transform([](auto&& row) {
+                       return (row | rv::tail) | rv::drop_last(1) | rs::to_vector;
+                   })
+                   | rs::to_vector;
+    return t;
+}
+
+std::vector<std::vector<char>> stitch_tiles(const std::vector<tile>& image, int width)
+{
+    std::vector<std::vector<char>> stitched_image;
+
+    int tile_width = static_cast<int>(image[0].image_data[0].size());
+
+    stitched_image.resize(width * tile_width);
+
+    for (auto& row : stitched_image) {
+        row.resize(width * tile_width);
+    }
+
+    for (int image_row = 0; image_row < width; ++image_row) {
+        for (int tile_row = 0; tile_row < tile_width; ++tile_row) {
+            for (int image_column = 0; image_column < width; ++image_column) {
+                for (int tile_column = 0; tile_column < tile_width; ++tile_column) {
+                    const auto& tile = image[(image_row * width) + image_column];
+
+                    stitched_image[image_row * tile_width + tile_row]
+                                  [image_column * tile_width + tile_column]
+                        = tile.image_data[tile_row][tile_column];
+                }
+            }
+        }
+    }
+
+    return stitched_image;
+}
+
 int64_t part1(std::map<tile, std::vector<tile>, tile_compare> neighbor_map)
 {
     return rs::accumulate(
@@ -265,6 +306,9 @@ int64_t part2(std::map<tile, std::vector<tile>, tile_compare> neighbor_map, int 
 {
     auto image_tiles = place_tiles(neighbor_map, width);
 
+    auto trimmed_tiles = image_tiles | rv::transform([](auto&& t) { return remove_borders(*t); })
+                         | rs::to_vector;
+
     return 0;
 }
 
@@ -274,13 +318,14 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 20\n");
 
-    std::string input_path = "days/day20/puzzle.in";
+    std::string input_path = "days/day20/example.in";
 
     auto input        = read_input(std::ifstream{input_path});
     auto neighbor_map = build_neighbor_map(input);
+    auto width        = static_cast<int>(std::sqrt(neighbor_map.size()));
 
     fmt::print("Part 1 Solution: {}\n", part1(neighbor_map));
-    fmt::print("Part 2 Solution: {}\n", part2(neighbor_map, 12));
+    fmt::print("Part 2 Solution: {}\n", part2(neighbor_map, width));
 
     return 0;
 }
@@ -290,6 +335,191 @@ int main()
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 #include <sstream>
+
+TEST_CASE("Can stitch images together")
+{
+    std::stringstream ss;
+
+    ss << R"(Tile 2311:
+..##.#..#.
+##..#.....
+#...##..#.
+####.#...#
+##.##.###.
+##...#.###
+.#.#.#..##
+..#....#..
+###...#.#.
+..###..###
+
+Tile 1951:
+#.##...##.
+#.####...#
+.....#..##
+#...######
+.##.#....#
+.###.#####
+###.##.##.
+.###....#.
+..#.#..#.#
+#...##.#..
+
+Tile 1171:
+####...##.
+#..##.#..#
+##.#..#.#.
+.###.####.
+..###.####
+.##....##.
+.#...####.
+#.##.####.
+####..#...
+.....##...
+
+Tile 1427:
+###.##.#..
+.#..#.##..
+.#.##.#..#
+#.#.#.##.#
+....#...##
+...##..##.
+...#.#####
+.#.####.#.
+..#..###.#
+..##.#..#.
+
+Tile 1489:
+##.#.#....
+..##...#..
+.##..##...
+..#...#...
+#####...#.
+#..#.#.#.#
+...#.#.#..
+##.#...##.
+..##.##.##
+###.##.#..
+
+Tile 2473:
+#....####.
+#..#.##...
+#.##..#...
+######.#.#
+.#...#.#.#
+.#########
+.###.#..#.
+########.#
+##...##.#.
+..###.#.#.
+
+Tile 2971:
+..#.#....#
+#...###...
+#.#.###...
+##.##..#..
+.#####..##
+.#..####.#
+#..#.#..#.
+..####.###
+..#.#.###.
+...#.#.#.#
+
+Tile 2729:
+...#.#.#.#
+####.#....
+..#.#.....
+....#..#.#
+.##..##.#.
+.#.####...
+####.#.#..
+##.####...
+##..#.##..
+#.##...##.
+
+Tile 3079:
+#.#.#####.
+.#..######
+..#.......
+######....
+####.#..#.
+.#...#.##.
+#.#####.##
+..#.###...
+..#.......
+..#.###...)";
+
+    auto input         = read_input(std::move(ss));
+    auto neighbor_map  = build_neighbor_map(input);
+    auto image_tiles   = place_tiles(neighbor_map, 3);
+    auto trimmed_tiles = image_tiles | rv::transform([](auto&& t) { return remove_borders(*t); })
+                         | rs::to_vector;
+
+    // clang-format off
+    auto expected = std::vector{
+        std::vector{'.', '#', '.', '#', '.', '.', '#', '.', '#', '#', '.', '.', '.', '#', '.', '#', '#', '.', '.', '#', '#', '#', '#', '#'},
+        std::vector{'#', '#', '#', '.', '.', '.', '.', '#', '.', '#', '.', '.', '.', '.', '#', '.', '.', '#', '.', '.', '.', '.', '.', '.'},
+        std::vector{'#', '#', '.', '#', '#', '.', '#', '#', '#', '.', '#', '.', '#', '.', '.', '#', '#', '#', '#', '#', '#', '.', '.', '.'},
+        std::vector{'#', '#', '#', '.', '#', '#', '#', '#', '#', '.', '.', '.', '#', '.', '#', '#', '#', '#', '#', '.', '#', '.', '.', '#'},
+        std::vector{'#', '#', '.', '#', '.', '.', '.', '.', '#', '.', '#', '#', '.', '#', '#', '#', '#', '.', '.', '.', '#', '.', '#', '#'},
+        std::vector{'.', '.', '.', '#', '#', '#', '#', '#', '#', '#', '#', '.', '#', '.', '.', '.', '.', '#', '#', '#', '#', '#', '.', '#'},
+        std::vector{'.', '.', '.', '.', '#', '.', '.', '#', '.', '.', '.', '#', '#', '.', '.', '#', '.', '#', '.', '#', '#', '#', '.', '.'},
+        std::vector{'.', '#', '#', '#', '#', '.', '.', '.', '#', '.', '.', '#', '.', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.', '.'},
+        std::vector{'#', '.', '.', '#', '.', '#', '#', '.', '.', '#', '.', '.', '#', '#', '#', '.', '#', '.', '#', '#', '.', '.', '.', '.'},
+        std::vector{'#', '.', '#', '#', '#', '#', '.', '.', '#', '.', '#', '#', '#', '#', '.', '#', '.', '#', '.', '#', '#', '#', '.', '.'},
+        std::vector{'#', '#', '#', '.', '#', '.', '#', '.', '.', '.', '#', '.', '#', '#', '#', '#', '#', '#', '.', '#', '.', '.', '#', '#'},
+        std::vector{'#', '.', '#', '#', '#', '#', '.', '.', '.', '.', '#', '#', '.', '.', '#', '#', '#', '#', '#', '#', '#', '#', '.', '#'},
+        std::vector{'#', '#', '.', '.', '#', '#', '.', '#', '.', '.', '.', '#', '.', '.', '.', '#', '.', '#', '.', '#', '.', '#', '.', '.'},
+        std::vector{'.', '.', '.', '#', '.', '.', '#', '.', '.', '#', '.', '#', '.', '#', '#', '.', '.', '#', '#', '#', '.', '#', '#', '#'},
+        std::vector{'.', '#', '.', '#', '.', '.', '.', '.', '#', '.', '#', '#', '.', '#', '.', '.', '.', '#', '#', '#', '.', '#', '#', '.'},
+        std::vector{'#', '#', '#', '.', '#', '.', '.', '.', '#', '.', '.', '#', '.', '#', '#', '.', '#', '#', '#', '#', '#', '#', '.', '.'},
+        std::vector{'.', '#', '.', '#', '.', '#', '#', '#', '.', '#', '#', '.', '#', '#', '.', '#', '.', '.', '#', '.', '#', '#', '.', '.'},
+        std::vector{'.', '#', '#', '#', '#', '.', '#', '#', '#', '.', '#', '.', '.', '.', '#', '#', '#', '.', '#', '.', '.', '#', '.', '#'},
+        std::vector{'.', '.', '#', '.', '#', '.', '.', '#', '.', '.', '#', '.', '#', '.', '#', '.', '#', '#', '#', '#', '.', '#', '#', '#'},
+        std::vector{'#', '.', '.', '#', '#', '#', '#', '.', '.', '.', '#', '.', '#', '.', '#', '.', '#', '#', '#', '.', '#', '#', '#', '.'},
+        std::vector{'#', '#', '#', '#', '#', '.', '.', '#', '#', '#', '#', '#', '.', '.', '.', '#', '#', '#', '.', '.', '.', '.', '#', '#'},
+        std::vector{'#', '.', '#', '#', '.', '.', '#', '.', '.', '#', '.', '.', '.', '#', '.', '.', '#', '#', '#', '#', '.', '.', '.', '#'},
+        std::vector{'.', '#', '.', '#', '#', '#', '.', '.', '#', '#', '.', '.', '#', '#', '.', '.', '#', '#', '#', '#', '.', '#', '#', '.'},
+        std::vector{'.', '.', '.', '#', '#', '#', '.', '.', '.', '#', '#', '.', '.', '.', '#', '.', '.', '.', '#', '.', '.', '#', '#', '#'}};
+
+    expected = rotate_tile(expected);
+    expected = rotate_tile(expected);
+
+    // clang-format on
+
+    REQUIRE(expected == stitch_tiles(trimmed_tiles, 3));
+}
+
+TEST_CASE("Can remove tile borders")
+{
+    tile t;
+    t.id         = 0;
+    t.image_data = std::vector{
+        std::vector{'#', '#', '#', '#', '#', '.', '.', '.', '.', '.'},
+        std::vector{'.', '.', '.', '.', '.', '#', '#', '#', '#', '#'},
+        std::vector{'#', '#', '#', '#', '#', '.', '.', '.', '.', '.'},
+        std::vector{'.', '.', '.', '.', '.', '#', '#', '#', '#', '#'},
+        std::vector{'#', '#', '#', '#', '#', '.', '.', '.', '.', '.'},
+        std::vector{'.', '.', '.', '.', '.', '#', '#', '#', '#', '#'},
+        std::vector{'#', '#', '#', '#', '#', '.', '.', '.', '.', '.'},
+        std::vector{'.', '.', '.', '.', '.', '#', '#', '#', '#', '#'},
+        std::vector{'#', '#', '#', '#', '#', '.', '.', '.', '.', '.'},
+        std::vector{'.', '.', '.', '.', '.', '#', '#', '#', '#', '#'}};
+
+    t = remove_borders(t);
+
+    auto expected = std::vector{
+        std::vector{'.', '.', '.', '.', '#', '#', '#', '#'},
+        std::vector{'#', '#', '#', '#', '.', '.', '.', '.'},
+        std::vector{'.', '.', '.', '.', '#', '#', '#', '#'},
+        std::vector{'#', '#', '#', '#', '.', '.', '.', '.'},
+        std::vector{'.', '.', '.', '.', '#', '#', '#', '#'},
+        std::vector{'#', '#', '#', '#', '.', '.', '.', '.'},
+        std::vector{'.', '.', '.', '.', '#', '#', '#', '#'},
+        std::vector{'#', '#', '#', '#', '.', '.', '.', '.'}};
+
+
+    REQUIRE(expected == t.image_data);
+}
 
 TEST_CASE("Can rotate tile")
 {
