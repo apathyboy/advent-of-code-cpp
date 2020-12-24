@@ -293,6 +293,26 @@ std::vector<std::vector<char>> stitch_tiles(const std::vector<tile>& image, int 
     return stitched_image;
 }
 
+int count_monsters(std::vector<std::vector<char>> image)
+{
+    int monster_count = 0;
+
+    for (auto rng : image | rv::sliding(3)) {
+        auto slice = rng | rs::to_vector;
+        for (int i = 0; i < slice[0].size() - 20; ++i) {
+            if (slice[1][i] == '#' && slice[2][i + 1] == '#' && slice[2][i + 4] == '#'
+                && slice[1][i + 5] == '#' && slice[1][i + 6] == '#' && slice[2][i + 7] == '#'
+                && slice[2][i + 10] == '#' && slice[1][i + 11] == '#' && slice[1][i + 12] == '#'
+                && slice[2][i + 13] == '#' && slice[2][i + 16] == '#' && slice[1][i + 17] == '#'
+                && slice[1][i + 18] == '#' && slice[0][i + 18] == '#' && slice[1][i + 19] == '#') {
+                ++monster_count;
+            }
+        }
+    }
+
+    return monster_count;
+}
+
 int64_t part1(std::map<tile, std::vector<tile>, tile_compare> neighbor_map)
 {
     return rs::accumulate(
@@ -309,7 +329,20 @@ int64_t part2(std::map<tile, std::vector<tile>, tile_compare> neighbor_map, int 
     auto trimmed_tiles = image_tiles | rv::transform([](auto&& t) { return remove_borders(*t); })
                          | rs::to_vector;
 
-    return 0;
+    auto image = stitch_tiles(trimmed_tiles, width);
+
+    int monsters_found    = count_monsters(image);
+    int tiles_per_monster = 15;
+
+    int i = 0;
+    while (monsters_found == 0 && i < 8) {
+        image          = i++ % 4 == 0 ? flip(image) : rotate_tile(image);
+        monsters_found = count_monsters(image);
+    }
+
+    auto water_roughness = rs::count(image | rv::join, '#');
+
+    return water_roughness - (monsters_found * tiles_per_monster);
 }
 
 #ifndef UNIT_TESTING
@@ -318,7 +351,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 20\n");
 
-    std::string input_path = "days/day20/example.in";
+    std::string input_path = "days/day20/puzzle.in";
 
     auto input        = read_input(std::ifstream{input_path});
     auto neighbor_map = build_neighbor_map(input);
@@ -335,6 +368,42 @@ int main()
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 #include <sstream>
+
+TEST_CASE("Can count monsters")
+{
+    // clang-format off
+    auto image = std::vector{
+        std::vector{'.', '#', '.', '#', '.', '.', '#', '.', '#', '#', '.', '.', '.', '#', '.', '#', '#', '.', '.', '#', '#', '#', '#', '#'},
+        std::vector{'#', '#', '#', '.', '.', '.', '.', '#', '.', '#', '.', '.', '.', '.', '#', '.', '.', '#', '.', '.', '.', '.', '.', '.'},
+        std::vector{'#', '#', '.', '#', '#', '.', '#', '#', '#', '.', '#', '.', '#', '.', '.', '#', '#', '#', '#', '#', '#', '.', '.', '.'},
+        std::vector{'#', '#', '#', '.', '#', '#', '#', '#', '#', '.', '.', '.', '#', '.', '#', '#', '#', '#', '#', '.', '#', '.', '.', '#'},
+        std::vector{'#', '#', '.', '#', '.', '.', '.', '.', '#', '.', '#', '#', '.', '#', '#', '#', '#', '.', '.', '.', '#', '.', '#', '#'},
+        std::vector{'.', '.', '.', '#', '#', '#', '#', '#', '#', '#', '#', '.', '#', '.', '.', '.', '.', '#', '#', '#', '#', '#', '.', '#'},
+        std::vector{'.', '.', '.', '.', '#', '.', '.', '#', '.', '.', '.', '#', '#', '.', '.', '#', '.', '#', '.', '#', '#', '#', '.', '.'},
+        std::vector{'.', '#', '#', '#', '#', '.', '.', '.', '#', '.', '.', '#', '.', '.', '.', '.', '.', '#', '.', '.', '.', '.', '.', '.'},
+        std::vector{'#', '.', '.', '#', '.', '#', '#', '.', '.', '#', '.', '.', '#', '#', '#', '.', '#', '.', '#', '#', '.', '.', '.', '.'},
+        std::vector{'#', '.', '#', '#', '#', '#', '.', '.', '#', '.', '#', '#', '#', '#', '.', '#', '.', '#', '.', '#', '#', '#', '.', '.'},
+        std::vector{'#', '#', '#', '.', '#', '.', '#', '.', '.', '.', '#', '.', '#', '#', '#', '#', '#', '#', '.', '#', '.', '.', '#', '#'},
+        std::vector{'#', '.', '#', '#', '#', '#', '.', '.', '.', '.', '#', '#', '.', '.', '#', '#', '#', '#', '#', '#', '#', '#', '.', '#'},
+        std::vector{'#', '#', '.', '.', '#', '#', '.', '#', '.', '.', '.', '#', '.', '.', '.', '#', '.', '#', '.', '#', '.', '#', '.', '.'},
+        std::vector{'.', '.', '.', '#', '.', '.', '#', '.', '.', '#', '.', '#', '.', '#', '#', '.', '.', '#', '#', '#', '.', '#', '#', '#'},
+        std::vector{'.', '#', '.', '#', '.', '.', '.', '.', '#', '.', '#', '#', '.', '#', '.', '.', '.', '#', '#', '#', '.', '#', '#', '.'},
+        std::vector{'#', '#', '#', '.', '#', '.', '.', '.', '#', '.', '.', '#', '.', '#', '#', '.', '#', '#', '#', '#', '#', '#', '.', '.'},
+        std::vector{'.', '#', '.', '#', '.', '#', '#', '#', '.', '#', '#', '.', '#', '#', '.', '#', '.', '.', '#', '.', '#', '#', '.', '.'},
+        std::vector{'.', '#', '#', '#', '#', '.', '#', '#', '#', '.', '#', '.', '.', '.', '#', '#', '#', '.', '#', '.', '.', '#', '.', '#'},
+        std::vector{'.', '.', '#', '.', '#', '.', '.', '#', '.', '.', '#', '.', '#', '.', '#', '.', '#', '#', '#', '#', '.', '#', '#', '#'},
+        std::vector{'#', '.', '.', '#', '#', '#', '#', '.', '.', '.', '#', '.', '#', '.', '#', '.', '#', '#', '#', '.', '#', '#', '#', '.'},
+        std::vector{'#', '#', '#', '#', '#', '.', '.', '#', '#', '#', '#', '#', '.', '.', '.', '#', '#', '#', '.', '.', '.', '.', '#', '#'},
+        std::vector{'#', '.', '#', '#', '.', '.', '#', '.', '.', '#', '.', '.', '.', '#', '.', '.', '#', '#', '#', '#', '.', '.', '.', '#'},
+        std::vector{'.', '#', '.', '#', '#', '#', '.', '.', '#', '#', '.', '.', '#', '#', '.', '.', '#', '#', '#', '#', '.', '#', '#', '.'},
+        std::vector{'.', '.', '.', '#', '#', '#', '.', '.', '.', '#', '#', '.', '.', '.', '#', '.', '.', '.', '#', '.', '.', '#', '#', '#'}};
+    // clang-format on
+
+    image = rotate_tile(image);
+    image = flip(image);
+
+    REQUIRE(2 == count_monsters(image));
+}
 
 TEST_CASE("Can stitch images together")
 {
@@ -858,7 +927,7 @@ Tile 3079:
     auto input        = read_input(std::move(ss));
     auto neighbor_map = build_neighbor_map(input);
 
-    REQUIRE(0 == part2(neighbor_map, 3));
+    REQUIRE(273 == part2(neighbor_map, 3));
 }
 
 #endif
