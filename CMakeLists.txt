@@ -35,6 +35,8 @@ add_library(
 include(CTest)
 include(Catch)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
 target_include_directories(
     aoc
     PUBLIC $<INSTALL_INTERFACE:include>
@@ -54,4 +56,4 @@ target_compile_options(
 
 target_link_libraries(aoc PRIVATE range-v3::meta)
 
-add_subdirectory(days)
+add_subdirectory(puzzles)
