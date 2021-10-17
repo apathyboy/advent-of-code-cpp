@@ -165,7 +165,7 @@ place_top_left(const std::map<tile, std::vector<tile>, tile_compare>& all_neighb
 
     neighbor = first_corner->second[1];
 
-    for (int i : rv::iota(0, 2)) {
+    for (int i = 0; i < 2; ++i) {
         for (int j : rv::iota(0, 8)) {
             // test at all sides and rotations/flip
             if (is_bottom_neighbor(*image[(row * width) + column], neighbor)) {

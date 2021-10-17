@@ -100,7 +100,7 @@ void run_cycle(T& grid)
 template <typename T>
 int64_t solve(grid_t<T> grid)
 {
-    for (int i : rv::iota(0, 6)) {
+    for (int i = 0; i < 6; ++i) {
         run_cycle(grid);
     }
 

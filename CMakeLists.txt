@@ -49,7 +49,8 @@ target_compile_options(
     PUBLIC $<$<CXX_COMPILER_ID:MSVC>:-W4
            -WX
            -analyze
-           -wd4702>) # TODO range-v3 error
+           -wd4702
+           -wd6285>) # TODO range-v3 error
 
 target_link_libraries(aoc2020 PRIVATE range-v3::meta)
 
