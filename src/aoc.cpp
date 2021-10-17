@@ -1,5 +1,5 @@
 
-#include "aoc2020.hpp"
+#include "aoc.hpp"
 
 #include <range/v3/all.hpp>
 

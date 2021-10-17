@@ -21,7 +21,7 @@ function(add_day)
 
     target_link_libraries(
         ${DAY_NAME}
-        PRIVATE aoc2020
+        PRIVATE aoc
                 fmt::fmt
                 range-v3::meta
                 ${DAY_LIBS})
@@ -30,7 +30,7 @@ function(add_day)
 
     target_link_libraries(
         ${DAY_NAME}_tests
-        PRIVATE aoc2020
+        PRIVATE aoc
                 fmt::fmt
                 range-v3::meta
                 ${DAY_LIBS})

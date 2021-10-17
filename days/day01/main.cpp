@@ -1,4 +1,4 @@
-#include <aoc2020/aoc2020.hpp>
+#include <aoc/aoc.hpp>
 
 #include <fmt/core.h>
 #include <range/v3/all.hpp>

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(aoc2020cpp)
+project(advent-of-code-cpp)
 
 find_package(
     Catch2
@@ -23,35 +23,35 @@ find_package(
     REQUIRED)
 
 add_library(
-    aoc2020
-    include/aoc2020/aoc2020.hpp
-    src/aoc2020.cpp)
+    aoc
+    include/aoc/aoc.hpp
+    src/aoc.cpp)
 
 add_library(
-    esb::aoc2020
+    esb::aoc
     ALIAS
-    aoc2020)
+    aoc)
 
 include(CTest)
 include(Catch)
 
 target_include_directories(
-    aoc2020
+    aoc
     PUBLIC $<INSTALL_INTERFACE:include>
            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/aoc2020
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/aoc
             ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_compile_features(aoc2020 PUBLIC cxx_std_20)
+target_compile_features(aoc PUBLIC cxx_std_20)
 
 target_compile_options(
-    aoc2020
+    aoc
     PUBLIC $<$<CXX_COMPILER_ID:MSVC>:-W4
            -WX
            -analyze
            -wd4702
            -wd6285>) # TODO range-v3 error
 
-target_link_libraries(aoc2020 PRIVATE range-v3::meta)
+target_link_libraries(aoc PRIVATE range-v3::meta)
 
 add_subdirectory(days)
