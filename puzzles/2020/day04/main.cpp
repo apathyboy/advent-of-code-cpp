@@ -118,7 +118,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 04\n");
 
-    std::ifstream ifs{"days/day04/puzzle.in"};
+    std::ifstream ifs{"puzzle.in"};
 
     auto input = ranges::getlines(ifs) | ranges::to<std::vector>;
 

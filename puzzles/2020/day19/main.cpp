@@ -114,7 +114,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 19\n");
 
-    std::string input_path = "days/day19/puzzle.in";
+    std::string input_path = "puzzle.in";
 
     auto [rules, messages] = read_input(std::ifstream{input_path});
 

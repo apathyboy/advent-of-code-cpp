@@ -43,8 +43,8 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 25\n");
 
-    std::ifstream ifs{"days/day25/puzzle.in"};
-    auto          public_keys = read_input(ifs);
+    auto input       = std::ifstream{"puzzle.in"};
+    auto public_keys = read_input(input);
 
     fmt::print("Part 1 Solution: {}\n", part1(public_keys));
 

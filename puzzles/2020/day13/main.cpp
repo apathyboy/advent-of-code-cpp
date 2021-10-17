@@ -64,7 +64,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 13\n");
 
-    auto [earliest_departure, schedules] = read_input(std::ifstream{"days/day13/puzzle.in"});
+    auto [earliest_departure, schedules] = read_input(std::ifstream{"puzzle.in"});
 
     fmt::print("Part 1 Solution: {}\n", part1(earliest_departure, schedules));
     fmt::print("Part 2 Solution: {}\n", part2(schedules));

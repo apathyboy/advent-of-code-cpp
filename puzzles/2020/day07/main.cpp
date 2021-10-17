@@ -106,7 +106,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 07\n");
 
-    auto input = parse_input(std::ifstream{"days/day07/puzzle.in"});
+    auto input = parse_input(std::ifstream{"puzzle.in"});
 
     fmt::print("Part 1 Solution: {}\n", part1(input, "shiny gold"));
 

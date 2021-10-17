@@ -127,7 +127,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 18\n");
 
-    std::string input_path = "days/day18/puzzle.in";
+    std::string input_path = "puzzle.in";
 
     fmt::print("Part 1 Solution: {}\n", part1(std::ifstream{input_path}));
     fmt::print("Part 2 Solution: {}\n", part2(std::ifstream{input_path}));

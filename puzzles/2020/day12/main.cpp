@@ -59,7 +59,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 12\n");
 
-    auto input = read_input(std::ifstream{"days/day12/puzzle.in"});
+    auto input = read_input(std::ifstream{"puzzle.in"});
 
     fmt::print("Part 1 Solution: {}\n", navigate(input, directions.at('E')));
     fmt::print("Part 2 Solution: {}\n", navigate(input, {10, 1}, true));

@@ -56,7 +56,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 10\n");
 
-    auto input = aoc::read_int_per_line(std::ifstream{"days/day10/puzzle.in"}) | ra::sort;
+    auto input = aoc::read_int_per_line(std::ifstream{"puzzle.in"}) | ra::sort;
 
     fmt::print("Part 1 Solution: {}\n", part1(input));
     fmt::print("Part 2 Solution: {}\n", part2(input));

@@ -45,7 +45,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 05\n");
 
-    std::ifstream ifs{"days/day05/puzzle.in"};
+    std::ifstream ifs{"puzzle.in"};
 
     auto input = rs::getlines(ifs) | rv::transform(calculate_seat_id) | rs::to<std::vector<int>>;
 

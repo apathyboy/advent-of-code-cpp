@@ -351,9 +351,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 20\n");
 
-    std::string input_path = "days/day20/puzzle.in";
-
-    auto input        = read_input(std::ifstream{input_path});
+    auto input        = read_input(std::ifstream{"puzzle.in"});
     auto neighbor_map = build_neighbor_map(input);
     auto width        = static_cast<int>(std::sqrt(neighbor_map.size()));
 

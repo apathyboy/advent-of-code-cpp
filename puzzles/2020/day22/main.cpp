@@ -110,7 +110,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 22\n");
 
-    std::string input_path = "days/day22/puzzle.in";
+    std::string input_path = "puzzle.in";
 
     auto decks = read_starting_decks(std::ifstream{input_path});
 

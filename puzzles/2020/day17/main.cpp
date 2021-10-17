@@ -113,7 +113,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 17\n");
 
-    std::string input_path = "days/day17/puzzle.in";
+    std::string input_path = "puzzle.in";
 
     fmt::print("Part 1 Solution: {}\n", solve(read_input_grid<glm::ivec3>(std::ifstream{input_path})));
     fmt::print("Part 2 Solution: {}\n", solve(read_input_grid<glm::ivec4>(std::ifstream{input_path})));

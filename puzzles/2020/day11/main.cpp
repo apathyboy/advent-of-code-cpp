@@ -193,7 +193,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 11\n");
 
-    auto [input, stride] = read_input(std::ifstream{"days/day11/puzzle.in"});
+    auto [input, stride] = read_input(std::ifstream{"puzzle.in"});
 
     fmt::print("Part 1 Solution: {}\n", part1(input, stride));
     fmt::print("Part 2 Solution: {}\n", part2(input, stride));
