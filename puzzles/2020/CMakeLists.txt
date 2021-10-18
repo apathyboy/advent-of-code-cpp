@@ -1,4 +1,3 @@
-
 # cmake-format: off
 AddDay(YEAR 2020 DAY day01)
 AddDay(YEAR 2020 DAY day02)
