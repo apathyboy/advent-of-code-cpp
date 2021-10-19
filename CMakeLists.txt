@@ -10,7 +10,12 @@ find_package(glm CONFIG REQUIRED)
 
 find_package(range-v3 CONFIG REQUIRED)
 
-add_library(aoc include/aoc/aoc.hpp src/aoc.cpp)
+add_library(
+    aoc
+    include/aoc/aoc.hpp
+    include/aoc/intcode.hpp
+    src/aoc.cpp
+    src/intcode.cpp)
 
 add_library(esb::aoc ALIAS aoc)
 
@@ -18,6 +23,8 @@ include(CTest)
 include(Catch)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+# aoc library
 
 target_include_directories(
     aoc
@@ -35,5 +42,23 @@ target_compile_options(
            -wd6285>) # TODO range-v3 error
 
 target_link_libraries(aoc PRIVATE range-v3::meta)
+
+# aoc unit tests
+
+add_executable(aoc_tests src/aoc_tests.cpp)
+
+target_link_libraries(aoc_tests PRIVATE aoc Catch2::Catch2)
+
+target_compile_options(
+    aoc_tests
+    PRIVATE $<$<CXX_COMPILER_ID:MSVC>:
+            -wd4201
+            -wd4996
+            -wd28278
+            -wd4459 # TODO range-v3 error
+            -wd4702 # TODO range-v3 error
+            -wd6330>) # TODO catch2 error
+
+catch_discover_tests(aoc_tests)
 
 add_subdirectory(puzzles)

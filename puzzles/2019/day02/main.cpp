@@ -1,4 +1,6 @@
 
+#include <aoc/intcode.hpp>
+
 #ifndef UNIT_TESTING
 
 int main()
