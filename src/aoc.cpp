@@ -10,8 +10,20 @@ namespace aoc {
 
 std::vector<int> read_int_per_line(std::istream&& input)
 {
-    return rs::getlines(input) | rv::transform([](auto&& s) { return std::stoi(s); })
-           | rs::to<std::vector>;
+    // clang-format off
+    return rs::getlines(input) 
+        | rv::transform([](auto&& s) { return std::stoi(s); })
+        | rs::to<std::vector>;
+    // clang-format on
+}
+
+std::vector<int> read_ints(std::istream&& input, char delimiter)
+{
+    // clang-format off
+    return rs::getlines(input, delimiter) 
+        | rv::transform([](auto&& s) { return std::stoi(s); })
+        | rs::to<std::vector>;
+    // clang-format on
 }
 
 } // namespace aoc
