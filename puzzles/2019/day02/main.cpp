@@ -1,5 +1,6 @@
 
 #include <aoc/aoc.hpp>
+#include <aoc/intcode.hpp>
 
 #include <fmt/format.h>
 #include <range/v3/all.hpp>
@@ -10,37 +11,12 @@
 namespace rs = ranges;
 namespace rv = ranges::views;
 
-std::vector<int> compute(std::vector<int> program)
-{
-    int instruction_pointer = 0;
-
-    while (program[instruction_pointer] != 99) {
-        switch (program[instruction_pointer]) {
-            case 1: {
-                program[program[instruction_pointer + 3]] = program[program[instruction_pointer + 1]]
-                                                            + program[program[instruction_pointer + 2]];
-                instruction_pointer += 4;
-            } break;
-            case 2: {
-                program[program[instruction_pointer + 3]] = program[program[instruction_pointer + 1]]
-                                                            * program[program[instruction_pointer + 2]];
-                instruction_pointer += 4;
-            } break;
-            default: {
-                std::runtime_error{fmt::format("Invalid Opcode: {}", program[instruction_pointer])};
-            }
-        }
-    }
-
-    return program;
-}
-
 int compute(std::vector<int> program, int noun, int verb)
 {
     program[1] = noun;
     program[2] = verb;
 
-    program = compute(program);
+    program = aoc::compute(program);
 
     return program[0];
 }
@@ -95,14 +71,5 @@ int main()
 
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
-
-TEST_CASE("Can run simple intcode program")
-{
-    std::vector<int> program{1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50};
-
-    program = compute(program);
-
-    REQUIRE(3500 == program[0]);
-}
 
 #endif

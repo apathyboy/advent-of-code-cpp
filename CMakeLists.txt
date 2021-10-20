@@ -10,6 +10,13 @@ find_package(glm CONFIG REQUIRED)
 
 find_package(range-v3 CONFIG REQUIRED)
 
+include(CTest)
+include(Catch)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+# aoc library
+
 add_library(
     aoc
     include/aoc/aoc.hpp
@@ -18,13 +25,6 @@ add_library(
     src/intcode.cpp)
 
 add_library(esb::aoc ALIAS aoc)
-
-include(CTest)
-include(Catch)
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-
-# aoc library
 
 target_include_directories(
     aoc
@@ -45,9 +45,9 @@ target_link_libraries(aoc PRIVATE range-v3::meta)
 
 # aoc unit tests
 
-add_executable(aoc_tests src/aoc_tests.cpp)
+add_executable(aoc_tests src/aoc_tests.cpp src/intcode_tests.cpp)
 
-target_link_libraries(aoc_tests PRIVATE aoc Catch2::Catch2)
+target_link_libraries(aoc_tests PRIVATE aoc Catch2::Catch2 fmt::fmt)
 
 target_compile_options(
     aoc_tests
