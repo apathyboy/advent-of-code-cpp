@@ -11,9 +11,7 @@ namespace aoc {
 std::vector<int> read_int_per_line(std::istream&& input)
 {
     // clang-format off
-    return rs::getlines(input) 
-        | rv::transform([](auto&& s) { return std::stoi(s); })
-        | rs::to<std::vector>;
+    return rs::istream_view<int>(input) | rs::to<std::vector>;
     // clang-format on
 }
 
