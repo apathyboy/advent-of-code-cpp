@@ -12,9 +12,14 @@ namespace rv = ranges::views;
 
 int64_t accumulate_depth_increases(auto&& r)
 {
-    return rs::accumulate(
-        r | rv::sliding(2) | rv::transform([](auto&& i) { return i[0] < i[1] ? 1 : 0; }),
-        0);
+    // clang-format off
+    auto depth_increases =         
+        r 
+        | rv::sliding(2)
+        | rv::transform([](auto&& window) { return window[0] < window[1] ? 1 : 0; });
+    // clang-format on
+
+    return rs::accumulate(depth_increases, 0);
 }
 
 int64_t part1(const std::vector<int>& input)
@@ -24,8 +29,14 @@ int64_t part1(const std::vector<int>& input)
 
 int64_t part2(const std::vector<int>& input)
 {
-    return accumulate_depth_increases(
-        input | rv::sliding(3) | rv::transform([](auto&& i) { return rs::accumulate(i, 0); }));
+    // clang-format off
+    auto depth_accumulations = 
+        input 
+        | rv::sliding(3) 
+        | rv::transform([](auto&& window) { return rs::accumulate(window, 0); });
+    // clang-format on
+
+    return accumulate_depth_increases(depth_accumulations);
 }
 
 #ifndef UNIT_TESTING
