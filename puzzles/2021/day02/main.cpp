@@ -7,56 +7,58 @@
 #include <numeric>
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace rs = ranges;
 namespace rv = ranges::views;
 
 int part1(std::istream&& input)
 {
-    auto movements = rs::getlines(input) | rv::transform([](auto&& r) {
-                         std::string dir = r.substr(0, r.find(' '));
-                         int         amt = std::stoi(r.substr(r.find(' ') + 1));
+    glm::ivec2 pos{0, 0};
 
-                         glm::ivec2 movement{0, 0};
+    for (auto str : rs::getlines(input)) {
+        auto dir = str[0];
+        int  amt = std::stoi(str.substr(str.find(' ') + 1));
 
-                         if (dir == "up") { movement += glm::ivec2{0, -amt}; }
-                         else if (dir == "down") {
-                             movement += glm::ivec2{0, amt};
-                         }
-                         else if (dir == "forward") {
-                             movement += glm::ivec2{amt, 0};
-                         }
+        switch (dir) {
+            case 'u':
+                pos.y -= amt;
+                break;
+            case 'd':
+                pos.y += amt;
+                break;
+            case 'f':
+                pos.x += amt;
+                break;
+        }
+    }
 
-                         return movement;
-                     });
-
-    auto pos = rs::accumulate(movements, glm::ivec2{0, 0});
     return pos.x * pos.y;
 }
 
 
 int part2(std::istream&& input)
 {
-    int aim = 0;
+    int        aim = 0;
+    glm::ivec2 pos{0, 0};
 
-    auto movements = rs::getlines(input) | rv::transform([&aim](auto&& r) {
-                         std::string dir = r.substr(0, r.find(' '));
-                         int         amt = std::stoi(r.substr(r.find(' ') + 1));
+    for (auto str : rs::getlines(input)) {
+        auto dir = str[0];
+        int  amt = std::stoi(str.substr(str.find(' ') + 1));
 
-                         glm::ivec2 movement{0, 0};
+        switch (dir) {
+            case 'u':
+                aim -= amt;
+                break;
+            case 'd':
+                aim += amt;
+                break;
+            case 'f':
+                pos += glm::ivec2{amt, amt * aim};
+                break;
+        }
+    }
 
-                         if (dir == "up") { aim -= amt; }
-                         else if (dir == "down") {
-                             aim += amt;
-                         }
-                         else if (dir == "forward") {
-                             movement += glm::ivec2{amt, amt * aim};
-                         }
-
-                         return movement;
-                     });
-
-    auto pos = rs::accumulate(movements, glm::ivec2{0, 0});
     return pos.x * pos.y;
 }
 
