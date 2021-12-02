@@ -1,21 +1,9 @@
 
-#include <fstream>
-#include <algorithm>
-#include <iomanip>
-#include <iostream>
-#include <iterator>
-#include <ranges>
-#include <sstream>
-#include <string>
 
 #ifndef UNIT_TESTING
 
 int main()
 {
-    std::ifstream in{"puzzle.in"};
-
-    auto t = std::ranges::istream_view<int>(in) | std::ranges::views::take(3);
-
     return 0;
 }
 
