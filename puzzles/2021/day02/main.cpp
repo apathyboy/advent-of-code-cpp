@@ -20,17 +20,11 @@ int part1(std::istream&& input)
         auto dir = str[0];
         int  amt = std::stoi(str.substr(str.find(' ') + 1));
 
-        switch (dir) {
-            case 'u':
-                pos.y -= amt;
-                break;
-            case 'd':
-                pos.y += amt;
-                break;
-            case 'f':
-                pos.x += amt;
-                break;
-        }
+        if (dir == 'u') pos.y -= amt;
+        else if (dir == 'd')
+            pos.y += amt;
+        else if (dir == 'f')
+            pos.x += amt;
     }
 
     return pos.x * pos.y;
@@ -46,17 +40,11 @@ int part2(std::istream&& input)
         auto dir = str[0];
         int  amt = std::stoi(str.substr(str.find(' ') + 1));
 
-        switch (dir) {
-            case 'u':
-                aim -= amt;
-                break;
-            case 'd':
-                aim += amt;
-                break;
-            case 'f':
-                pos += glm::ivec2{amt, amt * aim};
-                break;
-        }
+        if (dir == 'u') aim -= amt;
+        else if (dir == 'd')
+            aim += amt;
+        else if (dir == 'f')
+            pos += glm::ivec2{amt, amt * aim};
     }
 
     return pos.x * pos.y;
