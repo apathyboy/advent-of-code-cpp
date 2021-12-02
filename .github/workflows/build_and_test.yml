@@ -11,14 +11,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-21.04'", windows-latest]
+        os: ["ubuntu-21.04", windows-latest]
         include:
           - os: windows-latest
             triplet: x64-windows
             vcpkgCommitId: '699c8779f1b0feb4ed3564716d1ed31f69663ea6'
             cxx: cl.exe
             cc: cl.exe
-          - os: "ubuntu-latest"
+          - os: "ubuntu-21.04"
             triplet: x64-linux
             vcpkgCommitId: '699c8779f1b0feb4ed3564716d1ed31f69663ea6'
             cxx: clang++
