@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", windows-latest]
+        os: ["ubuntu-21.04'", windows-latest]
         include:
           - os: windows-latest
             triplet: x64-windows
@@ -21,8 +21,8 @@ jobs:
           - os: "ubuntu-latest"
             triplet: x64-linux
             vcpkgCommitId: '699c8779f1b0feb4ed3564716d1ed31f69663ea6'
-            cxx: clang++-13
-            cc: clang-13
+            cxx: clang++
+            cc: clang
 
     steps:
       - uses: actions/checkout@v1
