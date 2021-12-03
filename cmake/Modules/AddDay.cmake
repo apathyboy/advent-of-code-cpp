@@ -27,6 +27,7 @@ function(AddDay)
         ${APP_NAME_PREFIX}_app
         PRIVATE aoc
                 fmt::fmt
+                glm::glm
                 range-v3::meta
                 ${PUZZLE_LIBS})
 
@@ -36,6 +37,7 @@ function(AddDay)
         ${APP_NAME_PREFIX}_tests
         PRIVATE aoc
                 fmt::fmt
+                glm::glm
                 range-v3::meta
                 ${PUZZLE_LIBS})
 

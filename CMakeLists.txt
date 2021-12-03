@@ -41,7 +41,7 @@ target_compile_options(
            -wd4702
            -wd6285>) # TODO range-v3 error
 
-target_link_libraries(aoc PRIVATE range-v3::meta)
+target_link_libraries(aoc PRIVATE glm::glm range-v3::meta)
 
 # aoc unit tests
 
