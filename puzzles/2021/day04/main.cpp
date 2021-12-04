@@ -64,9 +64,6 @@ bingo_subsystem_t read_input(std::istream&& input)
 {
     bingo_subsystem_t bingo_subsystem{};
 
-    std::string tmp;
-    std::getline(input, tmp);
-
     bingo_subsystem.draw_numbers = aoc::split_line_by<int>(input, ',');
 
     while (!input.eof()) {
