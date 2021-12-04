@@ -35,7 +35,7 @@ TEST_CASE("Can read a character delimited list of ints from input")
 
     ss << R"(1721,979,366,299,675,1456)";
 
-    auto output = aoc::read_ints(std::move(ss), ',');
+    auto output = aoc::split_line_by<int>(ss, ',');
 
     REQUIRE(6 == output.size());
 

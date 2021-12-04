@@ -59,7 +59,8 @@ int main()
 {
     fmt::print("Advent of Code 2019 - Day 02\n");
 
-    auto program = aoc::read_ints(std::ifstream{"puzzle.in"}, ',');
+    std::ifstream ifs{"puzzle.in"};
+    auto          program = aoc::split_line_by<int>(ifs, ',');
 
     fmt::print("Part 1 Solution: {}\n", part1(program));
     fmt::print("Part 2 Solution: {}\n", part2(program));

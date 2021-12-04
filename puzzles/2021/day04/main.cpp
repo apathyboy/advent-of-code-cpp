@@ -1,3 +1,4 @@
+#include <aoc/aoc.hpp>
 
 #include <fmt/core.h>
 #include <range/v3/all.hpp>
@@ -66,10 +67,7 @@ bingo_subsystem_t read_input(std::istream&& input)
     std::string tmp;
     std::getline(input, tmp);
 
-    bingo_subsystem.draw_numbers = tmp | rv::split(',')
-                                   | rv::transform([](auto&& s) { return s | rs::to<std::string>; })
-                                   | rv::transform([](auto&& s) { return std::stoi(s); })
-                                   | rs::to<std::vector>;
+    bingo_subsystem.draw_numbers = aoc::split_line_by<int>(input, ',');
 
     while (!input.eof()) {
         bingo_subsystem.boards.emplace_back(read_board(input));

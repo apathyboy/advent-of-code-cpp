@@ -17,12 +17,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 # aoc library
 
-add_library(
-    aoc
-    include/aoc/aoc.hpp
-    include/aoc/intcode.hpp
-    src/aoc.cpp
-    src/intcode.cpp)
+add_library(aoc include/aoc/aoc.hpp include/aoc/intcode.hpp src/intcode.cpp)
 
 add_library(esb::aoc ALIAS aoc)
 
