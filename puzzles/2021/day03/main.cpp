@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-int find_oxygen_rating(std::vector<std::string> input)
+int filter_values(std::vector<std::string> input, bool most_common = true)
 {
     int i = 0;
     while (input.size() > 1) {
@@ -17,56 +17,14 @@ int find_oxygen_rating(std::vector<std::string> input)
             if (s[i] == '1') ++ones;
         }
 
-        if (ones >= input.size() - ones) {
-            input.erase(
-                std::remove_if(
-                    input.begin(),
-                    input.end(),
-                    [i](const std::string& t) { return t[i] == '0'; }),
-                input.end());
-        }
-        else {
-            input.erase(
-                std::remove_if(
-                    input.begin(),
-                    input.end(),
-                    [i](const std::string& t) { return t[i] == '1'; }),
-                input.end());
-        }
+        bool check = most_common ? (ones >= input.size() - ones) : (ones < input.size() - ones);
 
-        ++i;
-        if (i > input[0].length() - 1) i = 0;
-    }
-
-    return std::stoi(input[0], nullptr, 2);
-}
-
-int find_c02_scrubber_rating(std::vector<std::string> input)
-{
-    int i = 0;
-    while (input.size() > 1) {
-        int ones = 0;
-
-        for (auto s : input) {
-            if (s[i] == '1') ++ones;
-        }
-
-        if (ones < input.size() - ones) {
-            input.erase(
-                std::remove_if(
-                    input.begin(),
-                    input.end(),
-                    [i](const std::string& t) { return t[i] == '0'; }),
-                input.end());
-        }
-        else {
-            input.erase(
-                std::remove_if(
-                    input.begin(),
-                    input.end(),
-                    [i](const std::string& t) { return t[i] == '1'; }),
-                input.end());
-        }
+        input.erase(
+            std::remove_if(
+                input.begin(),
+                input.end(),
+                [i, check](const std::string& t) { return t[i] == (check ? '0' : '1'); }),
+            input.end());
 
         ++i;
         if (i > input[0].length() - 1) i = 0;
@@ -103,8 +61,8 @@ int part1(const std::vector<std::string>& input)
 
 int part2(std::vector<std::string> input)
 {
-    int oxygen_rating = find_oxygen_rating(input);
-    int c02_rating    = find_c02_scrubber_rating(input);
+    int oxygen_rating = filter_values(input);
+    int c02_rating    = filter_values(input, false);
 
     return oxygen_rating * c02_rating;
 }
