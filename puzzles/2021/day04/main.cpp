@@ -75,40 +75,33 @@ bingo_subsystem_t read_input(std::istream&& input)
 
 void mark_number(board_t& board, int num)
 {
-    for (auto& selected :
-         board | rv::join | rv::filter([num](const auto& pos) { return pos.number == num; })) {
-        selected.marked = true;
-    }
+    // clang-format off
+    auto selected = board 
+        | rv::join 
+        | rv::filter([num](const auto& pos) { return pos.number == num; }) 
+        | rv::take(1);
+    // clang-format on
+
+    if (!selected.empty()) { selected.front().marked = true; }
 }
 
 
-template <typename T>
-auto transpose(const std::vector<std::vector<T>>& grid)
+bool has_winning_row(const board_t& board)
 {
-    return rv::iota(0, static_cast<int>(grid[0].size())) | rv::transform([&grid](int i) {
-               return grid | rv::transform([i](auto&& t) { return t[i]; }) | rv::reverse | rs::to_vector;
-           })
-           | rs::to_vector;
+    bool won = false;
+    for (auto row : board) {
+        if (std::ranges::all_of(row, [](const auto& pos) { return pos.marked; })) { won = true; }
+    }
+
+    return won;
 }
 
 bool board_won(const board_t& board)
 {
-    for (auto row : board) {
-        bool won = true;
-        for (auto pos : row) {
-            if (!pos.marked) won = false;
-        }
-
-        if (won) return true;
-    }
-
-    for (int i = 0; i < board[0].size(); ++i) {
-        bool won = true;
-        for (auto row : board) {
-            if (!row[i].marked) won = false;
-        }
-
-        if (won) return true;
+    if (has_winning_row(board)) { return true; }
+    else {
+        auto transposed_board = aoc::transpose(board);
+        if (has_winning_row(transposed_board)) { return true; }
     }
 
     return false;

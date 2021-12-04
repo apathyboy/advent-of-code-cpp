@@ -28,4 +28,19 @@ std::vector<T> split_line_by(std::istream& input, char delimiter)
     // clang-format on
 }
 
+
+template <typename T>
+auto transpose(const std::vector<std::vector<T>>& grid)
+{
+    // clang-format off
+    return ranges::views::iota(0, static_cast<int>(grid[0].size())) 
+        | ranges::views::transform([&grid](int i) {
+            return grid 
+                | ranges::views::transform([i](auto&& t) { return t[i]; }) 
+                | ranges::views::reverse 
+                | ranges::to_vector; })
+        | ranges::to_vector;
+    // clang-format on
+}
+
 } // namespace aoc

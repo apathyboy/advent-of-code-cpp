@@ -1,3 +1,5 @@
+#include <aoc/aoc.hpp>
+
 #include <fmt/format.h>
 #include <range/v3/all.hpp>
 
@@ -34,16 +36,6 @@ std::vector<tile> read_input(std::istream&& input)
                tile t{parse_tile_id(v[0]), rv::tail(v) | rs::to<std::vector<std::vector<char>>>};
 
                return t;
-           })
-           | rs::to_vector;
-}
-
-
-template <typename T>
-auto rotate_tile(const std::vector<std::vector<T>>& grid)
-{
-    return rv::iota(0, static_cast<int>(grid[0].size())) | rv::transform([&grid](int i) {
-               return grid | rv::transform([i](auto&& t) { return t[i]; }) | rv::reverse | rs::to_vector;
            })
            | rs::to_vector;
 }
@@ -94,7 +86,7 @@ bool is_neighbor(const tile& t1, tile& t2)
             return true;
         }
 
-        t2.image_data = i % 4 == 0 ? flip(t2.image_data) : rotate_tile(t2.image_data);
+        t2.image_data = i % 4 == 0 ? flip(t2.image_data) : aoc::transpose(t2.image_data);
     }
 
     return false;
@@ -152,14 +144,14 @@ place_top_left(const std::map<tile, std::vector<tile>, tile_compare>& all_neighb
             }
 
             neighbor.image_data = j % 4 == 0 ? flip(neighbor.image_data)
-                                             : rotate_tile(neighbor.image_data);
+                                             : aoc::transpose(neighbor.image_data);
         }
 
         if (found_top_left_right_neighbor) { break; }
 
         image[(row * width) + column]->image_data = i % 4 == 0
                                                         ? flip(image[(row * width) + column]->image_data)
-                                                        : rotate_tile(
+                                                        : aoc::transpose(
                                                             image[(row * width) + column]->image_data);
     }
 
@@ -175,21 +167,21 @@ place_top_left(const std::map<tile, std::vector<tile>, tile_compare>& all_neighb
             }
 
             neighbor.image_data = j % 4 == 0 ? flip(neighbor.image_data)
-                                             : rotate_tile(neighbor.image_data);
+                                             : aoc::transpose(neighbor.image_data);
         }
 
         if (found_top_left_bottom_neighbor) break;
 
         image[(row * width) + column]->image_data = flip(image[(row * width) + column]->image_data);
-        image[(row * width) + column]->image_data = rotate_tile(
+        image[(row * width) + column]->image_data = aoc::transpose(
             image[(row * width) + column]->image_data);
-        image[(row * width) + column]->image_data = rotate_tile(
+        image[(row * width) + column]->image_data = aoc::transpose(
             image[(row * width) + column]->image_data);
         image[(row * width) + column + 1]->image_data = flip(
             image[(row * width) + column + 1]->image_data);
-        image[(row * width) + column + 1]->image_data = rotate_tile(
+        image[(row * width) + column + 1]->image_data = aoc::transpose(
             image[(row * width) + column + 1]->image_data);
-        image[(row * width) + column + 1]->image_data = rotate_tile(
+        image[(row * width) + column + 1]->image_data = aoc::transpose(
             image[(row * width) + column + 1]->image_data);
     }
 
@@ -204,7 +196,7 @@ std::optional<tile> find_right_neighbor(const std::vector<tile>& neighbors, cons
             if (is_right_neighbor(t, neighbor)) { return neighbor; }
 
             neighbor.image_data = j % 4 == 0 ? flip(neighbor.image_data)
-                                             : rotate_tile(neighbor.image_data);
+                                             : aoc::transpose(neighbor.image_data);
         }
     }
 
@@ -219,7 +211,7 @@ std::optional<tile> find_bottom_neighbor(const std::vector<tile>& neighbors, con
             if (is_bottom_neighbor(t, neighbor)) { return neighbor; }
 
             neighbor.image_data = j % 4 == 0 ? flip(neighbor.image_data)
-                                             : rotate_tile(neighbor.image_data);
+                                             : aoc::transpose(neighbor.image_data);
         }
     }
 
@@ -336,7 +328,7 @@ int64_t part2(std::map<tile, std::vector<tile>, tile_compare> neighbor_map, int 
 
     int i = 0;
     while (monsters_found == 0 && i < 8) {
-        image          = i++ % 4 == 0 ? flip(image) : rotate_tile(image);
+        image          = i++ % 4 == 0 ? flip(image) : aoc::transpose(image);
         monsters_found = count_monsters(image);
     }
 
@@ -397,7 +389,7 @@ TEST_CASE("Can count monsters")
         std::vector{'.', '.', '.', '#', '#', '#', '.', '.', '.', '#', '#', '.', '.', '.', '#', '.', '.', '.', '#', '.', '.', '#', '#', '#'}};
     // clang-format on
 
-    image = rotate_tile(image);
+    image = aoc::transpose(image);
     image = flip(image);
 
     REQUIRE(2 == count_monsters(image));
@@ -548,8 +540,8 @@ Tile 3079:
         std::vector{'.', '#', '.', '#', '#', '#', '.', '.', '#', '#', '.', '.', '#', '#', '.', '.', '#', '#', '#', '#', '.', '#', '#', '.'},
         std::vector{'.', '.', '.', '#', '#', '#', '.', '.', '.', '#', '#', '.', '.', '.', '#', '.', '.', '.', '#', '.', '.', '#', '#', '#'}};
 
-    expected = rotate_tile(expected);
-    expected = rotate_tile(expected);
+    expected = aoc::transpose(expected);
+    expected = aoc::transpose(expected);
 
     // clang-format on
 
@@ -616,7 +608,7 @@ TEST_CASE("Can rotate tile")
         std::vector{'#', '.', '#', '.', '#', '.', '#', '.', '#', '.'},
         std::vector{'#', '.', '#', '.', '#', '.', '#', '.', '#', '.'}};
 
-    REQUIRE(expected == rotate_tile(t.image_data));
+    REQUIRE(expected == aoc::transpose(t.image_data));
 }
 
 TEST_CASE("Can flip tile")
