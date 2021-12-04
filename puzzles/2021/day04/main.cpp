@@ -19,10 +19,8 @@ struct board_position_t {
 
 typedef std::vector<std::vector<board_position_t>> board_t;
 
-typedef std::vector<int> draw_numbers_t;
-
 struct bingo_subsystem_t {
-    draw_numbers_t       draw_numbers;
+    std::vector<int>     draw_numbers;
     std::vector<board_t> boards;
 };
 
@@ -33,28 +31,17 @@ board_t read_board(std::istream& input)
     std::string tmp;
     std::getline(input, tmp);
 
+    auto const rx = std::regex{"[\\d]+"};
+
     for (int i = 0; i < 5; ++i) {
         std::getline(input, tmp);
 
-        size_t begin_pos = 0;
-        size_t end_pos   = 0;
-
-        std::vector<board_position_t> row;
-
-        for (int j = 0; j < 5; ++j) {
-            board_position_t bp{};
-
-            if (tmp[begin_pos] == ' ') ++begin_pos;
-            end_pos = tmp.find(' ', begin_pos);
-
-            bp.number = std::stoi(tmp.substr(begin_pos, end_pos));
-
-            begin_pos = end_pos + 1;
-
-            row.emplace_back(bp);
-        }
-
-        board.emplace_back(std::move(row));
+        // clang-format off
+        board.emplace_back(tmp 
+            | rv::tokenize(rx) 
+            | rv::transform([](auto i) { return board_position_t{std::stoi(i), false}; })
+            | rs::to<std::vector>);
+        // clang-format on
     }
 
     return board;
@@ -75,36 +62,27 @@ bingo_subsystem_t read_input(std::istream&& input)
 
 void mark_number(board_t& board, int num)
 {
+    for (auto& selected :
+         board | rv::join | rv::filter([num](const auto& pos) { return pos.number == num; })) {
+        selected.marked = true;
+    }
+}
+
+bool is_winning_row(const auto& board_row)
+{
+    return rs::all_of(board_row, [](const auto& pos) { return pos.marked; });
+}
+
+bool has_won(const board_t& board)
+{
+    auto transposed_board = aoc::transpose(board);
+
     // clang-format off
-    auto selected = board 
-        | rv::join 
-        | rv::filter([num](const auto& pos) { return pos.number == num; }) 
-        | rv::take(1);
+    return !rs::empty(
+        rv::concat(board, transposed_board)
+            | rv::filter([](const auto& row) { return is_winning_row(row); }) 
+            | rv::take(1));
     // clang-format on
-
-    if (!selected.empty()) { selected.front().marked = true; }
-}
-
-
-bool has_winning_row(const board_t& board)
-{
-    bool won = false;
-    for (auto row : board) {
-        if (std::ranges::all_of(row, [](const auto& pos) { return pos.marked; })) { won = true; }
-    }
-
-    return won;
-}
-
-bool board_won(const board_t& board)
-{
-    if (has_winning_row(board)) { return true; }
-    else {
-        auto transposed_board = aoc::transpose(board);
-        if (has_winning_row(transposed_board)) { return true; }
-    }
-
-    return false;
 }
 
 int board_score(const board_t& board)
@@ -131,7 +109,7 @@ int part1(bingo_subsystem_t bingo_subsystem)
 
             mark_number(board, drawn_number);
 
-            if (board_won(board)) {
+            if (has_won(board)) {
                 if (i < min_drawn_numbers) {
                     min_drawn_numbers = i;
                     winning_number    = drawn_number;
@@ -158,7 +136,7 @@ int part2(bingo_subsystem_t bingo_subsystem)
 
             mark_number(board, drawn_number);
 
-            if (board_won(board)) {
+            if (has_won(board)) {
                 if (i > max_drawn_numbers) {
                     max_drawn_numbers = i;
                     winning_number    = drawn_number;
