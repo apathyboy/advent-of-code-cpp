@@ -45,7 +45,7 @@ int main()
 {
     fmt::print("Advent of Code 2021 - Day 01\n");
 
-    auto input = aoc::read_int_per_line(std::ifstream{"puzzle.in"});
+    auto input = aoc::read_element_per_line<int>(std::ifstream{"puzzle.in"});
 
     fmt::print("Part 1 Solution: {}\n", part1(input));
     fmt::print("Part 2 Solution: {}\n", part2(input));
@@ -72,7 +72,7 @@ TEST_CASE("Can solve part 1 example")
 260
 263)";
 
-    auto input = aoc::read_int_per_line(std::move(ss));
+    auto input = aoc::read_element_per_line<int>(std::move(ss));
 
     REQUIRE(7 == part1(input));
 }
@@ -92,7 +92,7 @@ TEST_CASE("Can solve part 2 example")
 260
 263)";
 
-    auto input = aoc::read_int_per_line(std::move(ss));
+    auto input = aoc::read_element_per_line<int>(std::move(ss));
 
     REQUIRE(5 == part2(input));
 }

@@ -56,7 +56,7 @@ int main()
 {
     fmt::print("Advent of Code 2020 - Day 10\n");
 
-    auto input = aoc::read_int_per_line(std::ifstream{"puzzle.in"}) | ra::sort;
+    auto input = aoc::read_element_per_line<int>(std::ifstream{"puzzle.in"}) | ra::sort;
 
     fmt::print("Part 1 Solution: {}\n", part1(input));
     fmt::print("Part 2 Solution: {}\n", part2(input));
@@ -88,7 +88,7 @@ TEST_CASE("Can solve day 10 problems")
 4)";
 
     // clang-format off
-    auto input = aoc::read_int_per_line(std::move(ss)) | ra::sort;
+    auto input = aoc::read_element_per_line<int>(std::move(ss)) | ra::sort;
     // clang-format on
 
     SECTION("Can solve part 1 example") { REQUIRE(35 == part1(input)); }

@@ -80,11 +80,20 @@ bingo_subsystem_t read_input(std::istream&& input)
 
 void mark_number(board_t& board, int num)
 {
-    for (auto& row : board) {
-        for (auto& pos : row) {
-            if (pos.number == num) pos.marked = true;
-        }
+    for (auto& selected :
+         board | rv::join | rv::filter([num](const auto& pos) { return pos.number == num; })) {
+        selected.marked = true;
     }
+}
+
+
+template <typename T>
+auto transpose(const std::vector<std::vector<T>>& grid)
+{
+    return rv::iota(0, static_cast<int>(grid[0].size())) | rv::transform([&grid](int i) {
+               return grid | rv::transform([i](auto&& t) { return t[i]; }) | rv::reverse | rs::to_vector;
+           })
+           | rs::to_vector;
 }
 
 bool board_won(const board_t& board)
@@ -112,15 +121,14 @@ bool board_won(const board_t& board)
 
 int board_score(const board_t& board)
 {
-    int score = 0;
+    // clang-format off
+    auto unmarked = board 
+        | rv::join 
+        | rv::filter([](auto pos) { return pos.marked == false; })
+        | rv::transform([](auto pos) { return pos.number; });
+    // clang-format on
 
-    for (auto row : board) {
-        for (auto pos : row) {
-            if (!pos.marked) { score += pos.number; }
-        }
-    }
-
-    return score;
+    return rs::accumulate(unmarked, 0);
 }
 
 int part1(bingo_subsystem_t bingo_subsystem)

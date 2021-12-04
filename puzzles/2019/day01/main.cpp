@@ -41,7 +41,7 @@ int main()
 {
     fmt::print("Advent of Code 2019 - Day 01\n");
 
-    auto module_masses = aoc::read_int_per_line(std::ifstream{"puzzle.in"});
+    auto module_masses = aoc::read_element_per_line<int>(std::ifstream{"puzzle.in"});
 
     fmt::print("Part 1 Solution: {}\n", part1(module_masses));
     fmt::print("Part 2 Solution: {}\n", part2(module_masses));

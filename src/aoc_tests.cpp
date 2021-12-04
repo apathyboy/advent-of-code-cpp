@@ -17,7 +17,7 @@ TEST_CASE("Can read a newline delimited list of ints from input")
 675
 1456)";
 
-    auto output = aoc::read_int_per_line(std::move(ss));
+    auto output = aoc::read_element_per_line<int>(std::move(ss));
 
     REQUIRE(6 == output.size());
 

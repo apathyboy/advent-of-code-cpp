@@ -8,13 +8,6 @@ namespace rv = ranges::views;
 
 namespace aoc {
 
-std::vector<int> read_int_per_line(std::istream&& input)
-{
-    // clang-format off
-    return rs::istream_view<int>(input) | rs::to<std::vector>;
-    // clang-format on
-}
-
 std::vector<int> read_ints(std::istream&& input, char delimiter)
 {
     // clang-format off
