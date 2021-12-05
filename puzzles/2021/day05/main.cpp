@@ -34,6 +34,21 @@ std::vector<line_t> read_input(std::istream&& input)
     return rs::getlines(input) | rv::transform(parse_line) | rs::to<std::vector>;
 }
 
+bool is_horizontal(const line_t& line)
+{
+    return line.a.y == line.b.y;
+}
+
+bool is_vertical(const line_t& line)
+{
+    return line.a.x == line.b.x;
+}
+
+bool is_horizontal_or_vertical(const line_t& line)
+{
+    return is_horizontal(line) || is_vertical(line);
+}
+
 int count_overlaps(const std::vector<line_t>& lines)
 {
     std::unordered_map<glm::ivec2, int> plots;
@@ -41,8 +56,8 @@ int count_overlaps(const std::vector<line_t>& lines)
     int counter = 0;
 
     for (const auto& line : lines) {
-        int x_step = (line.a.x == line.b.x) ? 0 : (line.a.x > line.b.x) ? -1 : 1;
-        int y_step = (line.a.y == line.b.y) ? 0 : (line.a.y > line.b.y) ? -1 : 1;
+        int x_step = is_vertical(line) ? 0 : (line.a.x > line.b.x) ? -1 : 1;
+        int y_step = is_horizontal(line) ? 0 : (line.a.y > line.b.y) ? -1 : 1;
 
         glm::ivec2 tmp = line.a;
         if (++plots[tmp] == 2) { ++counter; }
@@ -58,14 +73,7 @@ int count_overlaps(const std::vector<line_t>& lines)
 
 int part1(const std::vector<line_t>& lines)
 {
-    // clang-format off
-    auto lines_of_interest = lines 
-        | rv::filter([](const auto& line) {
-             return line.a.x == line.b.x || line.a.y == line.b.y; })
-        | rs::to<std::vector>;
-    // clang-format on
-
-    return count_overlaps(lines_of_interest);
+    return count_overlaps(lines | rv::filter(is_horizontal_or_vertical) | rs::to<std::vector>);
 }
 
 int part2(const std::vector<line_t>& lines)
