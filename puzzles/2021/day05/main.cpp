@@ -1,3 +1,4 @@
+#include <aoc/aoc.hpp>
 
 #include <fmt/core.h>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -18,32 +19,24 @@ struct line_t {
     glm::ivec2 b;
 };
 
-line_t read_line(const std::string& str)
+line_t parse_line(const std::string& str)
 {
-    auto const rx = std::regex{"(\\d+),(\\d+) -> (\\d+),(\\d+)"};
+    auto static const rx = std::regex{"(\\d+),(\\d+) -> (\\d+),(\\d+)"};
 
     std::smatch m;
-
     std::regex_search(str, m, rx);
 
-    return line_t{{std::stoi(m[1]), std::stoi(m[2])}, {std::stoi(m[3]), std::stoi(m[4])}};
+    return {{std::stoi(m[1]), std::stoi(m[2])}, {std::stoi(m[3]), std::stoi(m[4])}};
 }
 
 std::vector<line_t> read_input(std::istream&& input)
 {
-    std::vector<line_t> lines;
-
-    std::string tmp;
-    while (std::getline(input, tmp)) {
-        lines.emplace_back(read_line(tmp));
-    }
-
-    return lines;
+    return rs::getlines(input) | rv::transform(parse_line) | rs::to<std::vector>;
 }
 
 int count_overlaps(const std::vector<line_t>& lines)
 {
-    std::unordered_map<glm::ivec2, int> line_placements;
+    std::unordered_map<glm::ivec2, int> plots;
 
     int counter = 0;
 
@@ -52,16 +45,11 @@ int count_overlaps(const std::vector<line_t>& lines)
         int y_step = (line.a.y == line.b.y) ? 0 : (line.a.y > line.b.y) ? -1 : 1;
 
         glm::ivec2 tmp = line.a;
-
-        if (line_placements[tmp] == 1) { ++counter; }
-        line_placements[tmp]++;
+        if (++plots[tmp] == 2) { ++counter; }
 
         while (tmp != line.b) {
-
             tmp += glm::ivec2{x_step, y_step};
-
-            if (line_placements[tmp] == 1) { ++counter; }
-            line_placements[tmp]++;
+            if (++plots[tmp] == 2) { ++counter; }
         }
     }
 
@@ -79,7 +67,6 @@ int part1(const std::vector<line_t>& lines)
 
     return count_overlaps(lines_of_interest);
 }
-
 
 int part2(const std::vector<line_t>& lines)
 {
