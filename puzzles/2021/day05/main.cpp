@@ -41,79 +41,24 @@ std::vector<line_t> read_input(std::istream&& input)
     return lines;
 }
 
-int part1(const std::vector<line_t>& lines)
-{
-    std::unordered_map<glm::ivec2, int> line_placements;
-
-    auto lines_of_interest = lines | rv::filter([](const auto& line) {
-                                 return line.a.x == line.b.x || line.a.y == line.b.y;
-                             })
-                             | rs::to<std::vector>;
-
-    int counter = 0;
-
-    for (const auto& line : lines_of_interest) {
-        if (line.a.x == line.b.x) {
-            for (int i : rv::closed_iota(std::min(line.a.y, line.b.y), std::max(line.a.y, line.b.y))) {
-                glm::ivec2 tmp{line.a.x, i};
-
-                if (line_placements[tmp] == 1) { ++counter; }
-
-                line_placements[tmp]++;
-            }
-        }
-        else {
-            for (int i : rv::closed_iota(std::min(line.a.x, line.b.x), std::max(line.a.x, line.b.x))) {
-                glm::ivec2 tmp{i, line.b.y};
-
-                if (line_placements[tmp] == 1) { ++counter; }
-
-                line_placements[tmp]++;
-            }
-        }
-    }
-
-    return counter;
-}
-
-
-int part2(const std::vector<line_t>& lines)
+int count_overlaps(const std::vector<line_t>& lines)
 {
     std::unordered_map<glm::ivec2, int> line_placements;
 
     int counter = 0;
 
     for (const auto& line : lines) {
-        if (line.a.x == line.b.x) {
-            for (int i : rv::closed_iota(std::min(line.a.y, line.b.y), std::max(line.a.y, line.b.y))) {
-                glm::ivec2 tmp{line.a.x, i};
+        int x_step = (line.a.x == line.b.x) ? 0 : (line.a.x > line.b.x) ? -1 : 1;
+        int y_step = (line.a.y == line.b.y) ? 0 : (line.a.y > line.b.y) ? -1 : 1;
 
-                if (line_placements[tmp] == 1) { ++counter; }
+        glm::ivec2 tmp = line.a;
 
-                line_placements[tmp]++;
-            }
-        }
-        else if (line.a.y == line.b.y) {
-            for (int i : rv::closed_iota(std::min(line.a.x, line.b.x), std::max(line.a.x, line.b.x))) {
-                glm::ivec2 tmp{i, line.b.y};
+        if (line_placements[tmp] == 1) { ++counter; }
+        line_placements[tmp]++;
 
-                if (line_placements[tmp] == 1) { ++counter; }
+        while (tmp != line.b) {
 
-                line_placements[tmp]++;
-            }
-        }
-        else {
-            int x_step = (line.a.x > line.b.x) ? -1 : 1;
-            int y_step = (line.a.y > line.b.y) ? -1 : 1;
-
-            glm::ivec2 tmp = line.a;
-
-            while (tmp != line.b) {
-                if (line_placements[tmp] == 1) { ++counter; }
-                line_placements[tmp]++;
-
-                tmp += glm::ivec2{x_step, y_step};
-            }
+            tmp += glm::ivec2{x_step, y_step};
 
             if (line_placements[tmp] == 1) { ++counter; }
             line_placements[tmp]++;
@@ -121,6 +66,24 @@ int part2(const std::vector<line_t>& lines)
     }
 
     return counter;
+}
+
+int part1(const std::vector<line_t>& lines)
+{
+    // clang-format off
+    auto lines_of_interest = lines 
+        | rv::filter([](const auto& line) {
+             return line.a.x == line.b.x || line.a.y == line.b.y; })
+        | rs::to<std::vector>;
+    // clang-format on
+
+    return count_overlaps(lines_of_interest);
+}
+
+
+int part2(const std::vector<line_t>& lines)
+{
+    return count_overlaps(lines);
 }
 
 #ifndef UNIT_TESTING
