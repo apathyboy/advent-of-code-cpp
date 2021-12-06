@@ -11,28 +11,17 @@
 namespace rs = ranges;
 namespace rv = ranges::views;
 
-void update_timers(std::array<uint64_t, 9>& timers)
-{
-    auto newFish = timers[0];
-
-    for (int timer = 0; timer < 8; ++timer) {
-        timers[timer] = timers[timer + 1];
-    }
-
-    timers[8] = newFish;
-    timers[6] += newFish;
-}
-
 uint64_t simulate(std::vector<int> input, int days)
 {
     std::array<uint64_t, 9> timers{};
 
-    for (int i = 0; i < input.size(); ++i) {
-        timers[input[i]]++;
+    for (auto t : input) {
+        timers[t]++;
     }
 
     for (int i = 0; i < days; ++i) {
-        update_timers(timers);
+        rs::rotate(timers, timers.begin() + 1);
+        timers[6] += timers[8];
     }
 
     return rs::accumulate(timers, uint64_t(0));
