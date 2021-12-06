@@ -15,7 +15,7 @@ std::vector<T> read_element_per_line(std::istream&& input)
 }
 
 template <typename T>
-std::vector<T> split_line_by(std::istream& input, char delimiter)
+std::vector<T> split_line_by(std::istream& input, char delimiter = ',')
 {
     std::string tmp;
     std::getline(input, tmp);
