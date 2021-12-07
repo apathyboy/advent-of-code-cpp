@@ -26,11 +26,11 @@ int part1(std::vector<int> input)
 
 int part2(std::vector<int> input)
 {
+    double mean = rs::accumulate(input, 0.0) / input.size();
+
     int fuel = std::numeric_limits<int>::max();
 
-    auto t = rs::minmax(input);
-
-    for (int test_pos : rv::closed_iota(t.min, t.max)) {
+    for (int test_pos : rv::closed_iota((int)std::floor(mean), (int)std::ceil(mean))) {
         auto tmp = rs::accumulate(
             input | rv::transform([test_pos](int pos) {
                 auto tmp = rs::accumulate(rv::closed_iota(0, std::abs(test_pos - pos)), 0);
@@ -38,7 +38,7 @@ int part2(std::vector<int> input)
             }),
             0);
 
-        if (tmp < fuel) fuel = tmp;
+        if (tmp < fuel) { fuel = tmp; }
     }
 
     return fuel;
