@@ -41,7 +41,7 @@ size_t part2(std::vector<int> input)
 
 int main()
 {
-    fmt::print("Advent of Code 2021 - Day 05\n");
+    fmt::print("Advent of Code 2021 - Day 06\n");
 
     std::ifstream ifs{"puzzle.in"};
     auto          input = aoc::split_line_by<int>(ifs);
