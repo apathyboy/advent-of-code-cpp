@@ -43,4 +43,6 @@ auto transpose(const std::vector<std::vector<T>>& grid)
     // clang-format on
 }
 
+auto combine_chars = [](auto const& rc) { return rc | ranges::to<std::string>; };
+
 } // namespace aoc

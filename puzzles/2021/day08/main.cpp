@@ -14,8 +14,6 @@ struct calibration_t {
     std::vector<std::string> digits;
 };
 
-auto combine_chars = [](auto const& rc) { return rc | rs::to<std::string>; };
-
 char position_a(const std::vector<std::string>& signal_patterns)
 {
     auto r = signal_patterns
@@ -39,7 +37,7 @@ calibration_t read_calibration(const std::string& input)
     calibration_t t{};
     bool          read_digits = false;
 
-    for (std::string item : input | rv::split(' ') | rv::transform(combine_chars)) {
+    for (std::string item : input | rv::split(' ') | rv::transform(aoc::combine_chars)) {
         if (item == "|") { read_digits = true; }
 
         if (read_digits) { t.digits.push_back(item); }

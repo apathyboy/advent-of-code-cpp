@@ -1,3 +1,5 @@
+#include <aoc/aoc.hpp>
+
 #include <fmt/core.h>
 #include <range/v3/all.hpp>
 
@@ -12,7 +14,6 @@ struct field_t {
     std::string data;
 };
 
-auto combine_chars        = [](auto const& rc) { return rc | rs::to<std::string>; };
 auto to_passport_field    = [](const auto& s) { return field_t{s.substr(0, 3), s.substr(4)}; };
 auto is_valid_part1_field = [](const field_t& f) { return f.tag != "cid"; };
 auto is_valid_part2_field = [](const field_t& f) {
@@ -77,7 +78,7 @@ int part1(const std::vector<std::string>& lines)
             // clang-format off
             fields += rs::distance(str 
                 | rv::split(' ') 
-                | rv::transform(combine_chars)
+                | rv::transform(aoc::combine_chars)
                 | rv::transform(to_passport_field)
                 | rv::filter(is_valid_part1_field));
             // clang-format on
@@ -102,7 +103,7 @@ int part2(const std::vector<std::string>& lines)
             // clang-format off
             fields += rs::distance(str 
                 | rv::split(' ') 
-                | rv::transform(combine_chars)
+                | rv::transform(aoc::combine_chars)
                 | rv::transform(to_passport_field)
                 | rv::filter(is_valid_part2_field));
             // clang-format on

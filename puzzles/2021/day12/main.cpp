@@ -9,6 +9,14 @@ namespace rs = ranges;
 namespace rv = ranges::views;
 namespace ra = ranges::actions;
 
+std::vector<std::pair<std::string, std::string>> read_input(std::istream& input)
+{
+    return rs::getlines(input) | rv::transform([](auto&& s) {
+               return std::pair{s.substr(0, s.find_first_of('-')), s.substr(s.find_first_of('-') + 1)};
+           })
+           | rs::to<std::vector>;
+}
+
 int part1()
 {
     return 0;
@@ -23,7 +31,7 @@ int part2()
 
 int main()
 {
-    fmt::print("Advent of Code 2021 - Day XX\n");
+    fmt::print("Advent of Code 2021 - Day 12\n");
 
     std::ifstream ifs{"puzzle.in"};
 
@@ -40,7 +48,13 @@ int main()
 TEST_CASE("Can solve part 1 example")
 {
     std::stringstream ss;
-    ss << R"()";
+    ss << R"(start-A
+start-b
+A-c
+A-b
+b-d
+A-end
+b-end)";
 
     REQUIRE(0 == part1());
 }
