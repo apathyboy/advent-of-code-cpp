@@ -12,4 +12,5 @@ AddDay(YEAR 2021 DAY day11)
 AddDay(YEAR 2021 DAY day12)
 AddDay(YEAR 2021 DAY day13)
 AddDay(YEAR 2021 DAY day14)
+AddDay(YEAR 2021 DAY day15)
 # cmake-format: on
