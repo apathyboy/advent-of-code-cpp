@@ -23,7 +23,7 @@ int part2()
 
 int main()
 {
-    fmt::print("Advent of Code 2021 - Day XX\n");
+    fmt::print("Advent of Code 2021 - Day 15\n");
 
     std::ifstream ifs{"puzzle.in"};
 
