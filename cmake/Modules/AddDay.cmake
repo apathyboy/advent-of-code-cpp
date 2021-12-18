@@ -19,6 +19,7 @@ function(AddDay)
                 -wd4201
                 -wd4996
                 -wd28278
+                -wd4805
                 -wd4459 # TODO range-v3 error
                 -wd4702 # TODO range-v3 error
                 -wd6330>)
@@ -47,6 +48,7 @@ function(AddDay)
                 -wd4201
                 -wd4996
                 -wd28278
+                -wd4805
                 -wd4459 # TODO range-v3 error
                 -wd4702 # TODO range-v3 error
                 -wd6330>) # TODO catch2 error
