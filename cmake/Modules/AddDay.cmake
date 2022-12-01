@@ -37,6 +37,7 @@ function(AddDay)
     target_link_libraries(
         ${APP_NAME_PREFIX}_tests
         PRIVATE aoc
+                Catch2::Catch2WithMain
                 fmt::fmt
                 glm::glm
                 range-v3::meta

@@ -122,8 +122,7 @@ int main()
 
 #else
 
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <sstream>
 
 TEST_CASE("Can calculate deck score")

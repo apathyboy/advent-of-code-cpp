@@ -44,7 +44,7 @@ target_link_libraries(aoc PRIVATE glm::glm range-v3::meta)
 
 add_executable(aoc_tests src/aoc_tests.cpp src/intcode_tests.cpp)
 
-target_link_libraries(aoc_tests PRIVATE aoc Catch2::Catch2 fmt::fmt)
+target_link_libraries(aoc_tests PRIVATE aoc Catch2::Catch2WithMain fmt::fmt)
 
 target_compile_options(
     aoc_tests
