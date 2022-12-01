@@ -9,6 +9,163 @@ namespace rs = ranges;
 namespace rv = ranges::views;
 namespace ra = ranges::actions;
 
+
+using Display = uint8_t;
+
+constexpr const Display SEGMENT_A = 1;
+constexpr const Display SEGMENT_B = 1 << 1;
+constexpr const Display SEGMENT_C = 1 << 2;
+constexpr const Display SEGMENT_D = 1 << 3;
+constexpr const Display SEGMENT_E = 1 << 4;
+constexpr const Display SEGMENT_F = 1 << 5;
+constexpr const Display SEGMENT_G = 1 << 6;
+
+constexpr const std::array<Display, 10> NUMBERS = {
+    SEGMENT_A | SEGMENT_B | SEGMENT_C | SEGMENT_E | SEGMENT_F | SEGMENT_G,             // 0
+    SEGMENT_C | SEGMENT_F,                                                             // 1
+    SEGMENT_A | SEGMENT_C | SEGMENT_D | SEGMENT_E | SEGMENT_G,                         // 2
+    SEGMENT_A | SEGMENT_C | SEGMENT_D | SEGMENT_F | SEGMENT_G,                         // 3
+    SEGMENT_B | SEGMENT_C | SEGMENT_D | SEGMENT_F,                                     // 4
+    SEGMENT_A | SEGMENT_B | SEGMENT_D | SEGMENT_F | SEGMENT_G,                         // 5
+    SEGMENT_A | SEGMENT_B | SEGMENT_D | SEGMENT_E | SEGMENT_F | SEGMENT_G,             // 6
+    SEGMENT_A | SEGMENT_C | SEGMENT_F,                                                 // 7
+    SEGMENT_A | SEGMENT_B | SEGMENT_C | SEGMENT_D | SEGMENT_E | SEGMENT_F | SEGMENT_G, // 8
+    SEGMENT_A | SEGMENT_B | SEGMENT_C | SEGMENT_D | SEGMENT_F | SEGMENT_G,             // 9
+};
+
+struct Puzzle {
+    std::vector<Display> patterns;
+    std::vector<Display> numbers;
+};
+
+uint8_t cnt_segments(Display display)
+{
+    return static_cast<uint8_t>(std::popcount(display));
+}
+
+Puzzle parse_line(const std::string& input)
+{
+    Puzzle result;
+    bool   past_delim = false;
+    auto   it         = input.begin();
+    while (it != input.end()) {
+        // read one number
+        Display d = 0;
+        while (it != input.end() && std::islower(*it)) {
+            if (*it - 'a' > 7)
+                throw std::out_of_range("Unexpected value in input, only accepts values 'a-g'.");
+            d |= 1 << (*it - 'a');
+            it++;
+        }
+        if (past_delim) { result.numbers.push_back(d); }
+        else {
+            result.patterns.push_back(d);
+        }
+        // skip over spaces and delimiter '|'
+        while (it != input.end() && (std::isspace(*it) || *it == '|')) {
+            if (*it == '|') past_delim = true;
+            it++;
+        }
+    }
+    return result;
+}
+
+using Wiring = std::array<uint8_t, 7>;
+
+inline const std::unordered_map<Display, uint8_t> DECIMALS = {
+    {NUMBERS[0], 0},
+    {NUMBERS[1], 1},
+    {NUMBERS[2], 2},
+    {NUMBERS[3], 3},
+    {NUMBERS[4], 4},
+    {NUMBERS[5], 5},
+    {NUMBERS[6], 6},
+    {NUMBERS[7], 7},
+    {NUMBERS[8], 8},
+    {NUMBERS[9], 9}};
+
+
+bool segment_lit(Display disp, uint8_t segment)
+{
+    return disp & (1 << segment);
+}
+
+Wiring solve_wiring(const Puzzle& input)
+{
+    Wiring result = {NUMBERS[8], NUMBERS[8], NUMBERS[8], NUMBERS[8], NUMBERS[8], NUMBERS[8], NUMBERS[8]};
+    for (auto pattern : input.patterns) {
+        switch (cnt_segments(pattern)) {
+            case 2:
+                for (uint8_t wire_in = 0; wire_in < 7; wire_in++) {
+                    if (segment_lit(pattern, wire_in)) { result[wire_in] &= (SEGMENT_C | SEGMENT_F); }
+                    else {
+                        result[wire_in] &= ~(SEGMENT_C | SEGMENT_F);
+                    }
+                }
+                break;
+            case 3:
+                for (uint8_t wire_in = 0; wire_in < 7; wire_in++) {
+                    if (segment_lit(pattern, wire_in)) {
+                        result[wire_in] &= (SEGMENT_A | SEGMENT_C | SEGMENT_F);
+                    }
+                    else {
+                        result[wire_in] &= ~(SEGMENT_A | SEGMENT_C | SEGMENT_F);
+                    }
+                }
+                break;
+            case 4:
+                for (uint8_t wire_in = 0; wire_in < 7; wire_in++) {
+                    if (segment_lit(pattern, wire_in)) {
+                        result[wire_in] &= (SEGMENT_B | SEGMENT_C | SEGMENT_D | SEGMENT_F);
+                    }
+                    else {
+                        result[wire_in] &= ~(SEGMENT_B | SEGMENT_C | SEGMENT_D | SEGMENT_F);
+                    }
+                }
+                break;
+            case 5:
+                for (uint8_t wire_in = 0; wire_in < 7; wire_in++) {
+                    if (!segment_lit(pattern, wire_in)) {
+                        result[wire_in] &= (SEGMENT_B | SEGMENT_C | SEGMENT_E | SEGMENT_F);
+                    }
+                }
+                break;
+            case 6:
+                for (uint8_t wire_in = 0; wire_in < 7; wire_in++) {
+                    if (!segment_lit(pattern, wire_in)) {
+                        result[wire_in] &= (SEGMENT_C | SEGMENT_D | SEGMENT_E);
+                    }
+                }
+                break;
+        }
+    }
+    for (auto singular_wire : result) {
+        if (std::popcount(singular_wire) != 1) continue;
+
+        for (auto& undecided_wire : result) {
+            if (std::popcount(undecided_wire) == 1) continue;
+            undecided_wire &= ~singular_wire;
+        }
+    }
+    return result;
+}
+
+uint32_t decode_number(const Puzzle& puzzle, const Wiring& solved_wiring)
+{
+    uint32_t result = 0;
+    for (auto digit : puzzle.numbers) {
+        uint8_t display = 0;
+        for (uint8_t bit = 0; bit < 7; bit++) {
+            if (segment_lit(digit, bit)) display |= solved_wiring[bit];
+        }
+
+        result *= 10;
+        result += DECIMALS.at(display);
+    }
+    return result;
+}
+
+
 struct calibration_t {
     std::vector<std::string> signal_patterns;
     std::vector<std::string> digits;
@@ -80,10 +237,24 @@ int main()
     fmt::print("Advent of Code 2021 - Day 08\n");
 
     std::ifstream ifs{"puzzle.in"};
-    auto          input = read_input(std::move(ifs));
+    // auto          input = read_input(std::move(ifs));
 
-    fmt::print("Part 1 Solution: {}\n", part1(input));
-    fmt::print("Part 2 Solution: {}\n", part2(input));
+
+    std::string input_line;
+    uint64_t    part1_total = 0;
+    uint64_t    part2_total = 0;
+    while (std::getline(ifs, input_line)) {
+        Puzzle p = parse_line(input_line);
+        part1_total += std::ranges::count_if(p.numbers, [](auto num) {
+            uint8_t cnt = cnt_segments(num);
+            return cnt == 2 || cnt == 3 || cnt == 4 || cnt == 7;
+        });
+        Wiring w = solve_wiring(p);
+        part2_total += decode_number(p, w);
+    }
+
+    fmt::print("Part 1 Solution: {}\n", part1_total);
+    fmt::print("Part 2 Solution: {}\n", part2_total);
 }
 
 #else

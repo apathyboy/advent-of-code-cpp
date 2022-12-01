@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(advent-of-code-cpp)
 
+find_package(Boost REQUIRED)
+
 find_package(Catch2 CONFIG REQUIRED)
 
 find_package(fmt CONFIG REQUIRED)
