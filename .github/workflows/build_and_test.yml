@@ -1,35 +1,40 @@
-# Copyright (c) 2020 Luca Cappa
-# Released under the term specified in file LICENSE.txt
-# SPDX short identifier: MIT
-name: All Builds and Tests
+name: build-and-test
 on: [push]
 
 jobs:
   job:
-    name: ${{ matrix.os }}-build
+    name: ${{ matrix.os }}-${{ github.workflow }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", windows-latest]
+        os: [ubuntu-latest, windows-latest]
         include:
           - os: windows-latest
             triplet: x64-windows
-            vcpkgCommitId: '699c8779f1b0feb4ed3564716d1ed31f69663ea6'
-            cxx: cl.exe
-            cc: cl.exe
-          - os: "ubuntu-latest"
+            vcpkgCommitId: 'b49b2bdf22559c89eddbf29a29621a1dc6929320'
+            configurePreset: 'x64-debug'
+            buildPreset: 'verbose-build-windows'
+            testPreset: 'core-test-windows'
+          - os: ubuntu-latest
             triplet: x64-linux
-            vcpkgCommitId: '699c8779f1b0feb4ed3564716d1ed31f69663ea6'
-            cxx: clang++
-            cc: clang
-
+            vcpkgCommitId: 'b49b2bdf22559c89eddbf29a29621a1dc6929320'
+            configurePreset: 'linux-debug'
+            buildPreset: 'verbose-build-linux'
+            testPreset: 'core-test-linux'
+    
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg/bincache
+    
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           submodules: true
 
-      - uses: lukka/get-cmake@latest
+      - name: Linux Deps
+        if: startsWith(matrix.os, 'ubuntu')
+        run: sudo apt-get install -y libgl1-mesa-dev libxxf86vm-dev libxrandr-dev libxinerama-dev libxcursor-dev xorg-dev
 
       - name: Set up Clang
         if: startsWith(matrix.os, 'ubuntu')
@@ -37,33 +42,21 @@ jobs:
         with:
           version: 13
           platform: x64
+          
+      - uses: lukka/get-cmake@latest
 
-      - name: Set Compiler Environment
-        uses: lukka/set-shell-env@v1
+      - name: Restore artifacts or setups vcpkg
+        uses: lukka/run-vcpkg@v10
         with:
-          CXX: ${{ matrix.cxx }}
-          CC: ${{ matrix.cc }}
+          vcpkgGitCommitId: '${{ matrix.vcpkgCommitId }}'
 
-      - name: Restore artifacts, or setup vcpkg (do not install any package)
-        uses: lukka/run-vcpkg@v6
-        id: runvcpkg
+      - name: Run CMake
+        uses: lukka/run-cmake@v10
         with:
-          setupOnly: true
-          vcpkgDirectory: '${{ runner.workspace }}/build/vcpkg'
-          vcpkgGitCommitId: '${{ matrix.vcpkgCommitId}}'
-          # Ensure the cache key changes any time the content of the manifest file changes.
-          appendedCacheKey: ${{ hashFiles( '**/vcpkg.json' ) }}
-          vcpkgTriplet: ${{ matrix.triplet }}
-      
-      - name: Run CMake with vcpkg.json manifest
-        uses: lukka/run-cmake@v3
-        with:
-          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-          useVcpkgToolchainFile: true
-          buildDirectory: '${{ runner.workspace }}/build'
-          cmakeAppendedArgs: '"-GNinja Multi-Config" -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet}} '
-          buildWithCMake: true
-      
+          configurePreset: '${{ matrix.configurePreset }}'
+          buildPreset: '${{ matrix.buildPreset }}'
+          testPreset: '${{ matrix.testPreset }}'
+
       - name: Run CTest
-        run: 'cd ${{ runner.workspace }}/build && ctest'
+        shell: 'bash'
+        run: 'ctest --preset ${{ matrix.testPreset }}'
