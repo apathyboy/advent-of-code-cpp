@@ -32,10 +32,6 @@ jobs:
         with:
           submodules: true
 
-      - name: Linux Deps
-        if: startsWith(matrix.os, 'ubuntu')
-        run: sudo apt-get install -y libgl1-mesa-dev libxxf86vm-dev libxrandr-dev libxinerama-dev libxcursor-dev xorg-dev
-
       - name: Set up Clang
         if: startsWith(matrix.os, 'ubuntu')
         uses: egor-tensin/setup-clang@v1
