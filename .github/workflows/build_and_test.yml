@@ -12,13 +12,13 @@ jobs:
         include:
           - os: windows-latest
             triplet: x64-windows
-            vcpkgCommitId: 'b49b2bdf22559c89eddbf29a29621a1dc6929320'
+            vcpkgCommitId: '251741475900c9a57549d80f1b5a5e30e63d1887'
             configurePreset: 'x64-debug'
             buildPreset: 'verbose-build-windows'
             testPreset: 'core-test-windows'
           - os: ubuntu-latest
             triplet: x64-linux
-            vcpkgCommitId: 'b49b2bdf22559c89eddbf29a29621a1dc6929320'
+            vcpkgCommitId: '251741475900c9a57549d80f1b5a5e30e63d1887'
             configurePreset: 'linux-debug'
             buildPreset: 'verbose-build-linux'
             testPreset: 'core-test-linux'
