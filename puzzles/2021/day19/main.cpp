@@ -22,15 +22,25 @@ inline const constexpr int Z   = 2;
 inline const constexpr int POS = 1;
 inline const constexpr int NEG = -1;
 
+//inline const constexpr std::array<Rotation, 24> ROTATIONS({
+//    {{{X, POS}, {Y, POS}, {Z, POS}}}, {{{X, POS}, {Z, POS}, {Y, NEG}}}, {{{X, POS}, {Y, NEG}, {Z, NEG}}},
+//    {{{X, POS}, {Z, NEG}, {Y, POS}}}, {{{X, NEG}, {Y, POS}, {Z, NEG}}}, {{{X, NEG}, {Z, NEG}, {Y, NEG}}},
+//    {{{X, NEG}, {Y, NEG}, {Z, POS}}}, {{{X, NEG}, {Z, POS}, {Y, POS}}}, {{{Y, POS}, {X, POS}, {Z, NEG}}},
+//    {{{Y, POS}, {Z, NEG}, {X, NEG}}}, {{{Y, POS}, {X, NEG}, {Z, POS}}}, {{{Y, POS}, {Z, POS}, {X, POS}}},
+//    {{{Y, NEG}, {X, POS}, {Z, POS}}}, {{{Y, NEG}, {Z, POS}, {X, NEG}}}, {{{Y, NEG}, {X, NEG}, {Z, NEG}}},
+//    {{{Y, NEG}, {Z, NEG}, {X, POS}}}, {{{Z, POS}, {X, POS}, {Y, POS}}}, {{{Z, POS}, {Y, POS}, {X, NEG}}},
+//    {{{Z, POS}, {X, NEG}, {Y, NEG}}}, {{{Z, POS}, {Y, NEG}, {X, POS}}}, {{{Z, NEG}, {X, POS}, {Y, NEG}}},
+//    {{{Z, NEG}, {Y, NEG}, {X, NEG}}}, {{{Z, NEG}, {X, NEG}, {Y, POS}}}, {{{Z, NEG}, {Y, POS}, {X, POS}}},
+//});
 inline const constexpr std::array<Rotation, 24> ROTATIONS({
-    {{{X, POS}, {Y, POS}, {Z, POS}}}, {{{X, POS}, {Z, POS}, {Y, NEG}}}, {{{X, POS}, {Y, NEG}, {Z, NEG}}},
-    {{{X, POS}, {Z, NEG}, {Y, POS}}}, {{{X, NEG}, {Y, POS}, {Z, NEG}}}, {{{X, NEG}, {Z, NEG}, {Y, NEG}}},
-    {{{X, NEG}, {Y, NEG}, {Z, POS}}}, {{{X, NEG}, {Z, POS}, {Y, POS}}}, {{{Y, POS}, {X, POS}, {Z, NEG}}},
-    {{{Y, POS}, {Z, NEG}, {X, NEG}}}, {{{Y, POS}, {X, NEG}, {Z, POS}}}, {{{Y, POS}, {Z, POS}, {X, POS}}},
-    {{{Y, NEG}, {X, POS}, {Z, POS}}}, {{{Y, NEG}, {Z, POS}, {X, NEG}}}, {{{Y, NEG}, {X, NEG}, {Z, NEG}}},
-    {{{Y, NEG}, {Z, NEG}, {X, POS}}}, {{{Z, POS}, {X, POS}, {Y, POS}}}, {{{Z, POS}, {Y, POS}, {X, NEG}}},
-    {{{Z, POS}, {X, NEG}, {Y, NEG}}}, {{{Z, POS}, {Y, NEG}, {X, POS}}}, {{{Z, NEG}, {X, POS}, {Y, NEG}}},
-    {{{Z, NEG}, {Y, NEG}, {X, NEG}}}, {{{Z, NEG}, {X, NEG}, {Y, POS}}}, {{{Z, NEG}, {Y, POS}, {X, POS}}},
+    Rotation{{std::pair{X, POS}, std::pair{Y, POS}, std::pair{Z, POS}}}, Rotation{{std::pair{X, POS}, std::pair{Z, POS}, std::pair{Y, NEG}}}, Rotation{{std::pair{X, POS}, std::pair{Y, NEG}, std::pair{Z, NEG}}},
+    Rotation{{std::pair{X, POS}, std::pair{Z, NEG}, std::pair{Y, POS}}}, Rotation{{std::pair{X, NEG}, std::pair{Y, POS}, std::pair{Z, NEG}}}, Rotation{{std::pair{X, NEG}, std::pair{Z, NEG}, std::pair{Y, NEG}}},
+    Rotation{{std::pair{X, NEG}, std::pair{Y, NEG}, std::pair{Z, POS}}}, Rotation{{std::pair{X, NEG}, std::pair{Z, POS}, std::pair{Y, POS}}}, Rotation{{std::pair{Y, POS}, std::pair{X, POS}, std::pair{Z, NEG}}},
+    Rotation{{std::pair{Y, POS}, std::pair{Z, NEG}, std::pair{X, NEG}}}, Rotation{{std::pair{Y, POS}, std::pair{X, NEG}, std::pair{Z, POS}}}, Rotation{{std::pair{Y, POS}, std::pair{Z, POS}, std::pair{X, POS}}},
+    Rotation{{std::pair{Y, NEG}, std::pair{X, POS}, std::pair{Z, POS}}}, Rotation{{std::pair{Y, NEG}, std::pair{Z, POS}, std::pair{X, NEG}}}, Rotation{{std::pair{Y, NEG}, std::pair{X, NEG}, std::pair{Z, NEG}}},
+    Rotation{{std::pair{Y, NEG}, std::pair{Z, NEG}, std::pair{X, POS}}}, Rotation{{std::pair{Z, POS}, std::pair{X, POS}, std::pair{Y, POS}}}, Rotation{{std::pair{Z, POS}, std::pair{Y, POS}, std::pair{X, NEG}}},
+    Rotation{{std::pair{Z, POS}, std::pair{X, NEG}, std::pair{Y, NEG}}}, Rotation{{std::pair{Z, POS}, std::pair{Y, NEG}, std::pair{X, POS}}}, Rotation{{std::pair{Z, NEG}, std::pair{X, POS}, std::pair{Y, NEG}}},
+    Rotation{{std::pair{Z, NEG}, std::pair{Y, NEG}, std::pair{X, NEG}}}, Rotation{{std::pair{Z, NEG}, std::pair{X, NEG}, std::pair{Y, POS}}}, Rotation{{std::pair{Z, NEG}, std::pair{Y, POS}, std::pair{X, POS}}},
 });
 
 struct Point3D {
